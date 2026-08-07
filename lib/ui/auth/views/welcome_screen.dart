@@ -11,6 +11,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      showNavigationBar: false,
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

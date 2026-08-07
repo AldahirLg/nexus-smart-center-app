@@ -44,8 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# llave privada de firebase
-lib/firebase_options.dart
-firebase.json
+
 
 

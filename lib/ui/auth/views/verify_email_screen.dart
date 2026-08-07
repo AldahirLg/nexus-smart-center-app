@@ -13,6 +13,7 @@ class VerifyEmailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      showNavigationBar: false,
       body: Column(
         children: [
           Expanded(
@@ -28,73 +29,56 @@ class VerifyEmailScreen extends StatelessWidget {
             child: SizedBox(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: !viewModel.isEmailVerified
-                    ? Column(
-                        children: [
-                          Text(
-                            textAlign: TextAlign.center,
-                            'Verifica tu correo electronico',
-                            style: context.textTheme.headlineMedium?.copyWith(
-                              color: context.colors.primary,
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            textAlign: TextAlign.center,
-                            'Hemos enviado una link de verificacion a tu correo revisa la bandeja de entrada, despues de la confirmacion presiona el siguiente boton:',
-                            style: context.textTheme.bodyLarge?.copyWith(
-                              color: context.colors.primary,
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 12, right: 12),
-                            child: viewModel.isLoading
-                                ? CircularProgressIndicator()
-                                : SizedBox(
-                                    height: 60,
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        viewModel.checkEmailVerification();
-                                      },
-                                      child: Text('Confirmar'),
-                                    ),
-                                  ),
-                          ),
-                          SizedBox(height: 12),
-                          SizedBox(
-                            child: LogoutButton(
-                              viewModel: LogoutViewModel(
-                                authRepository: context.read(),
-                              ),
-                            ),
-                          ),
-                          if (viewModel.errorMessage != null)
-                            Text(
-                              viewModel.errorMessage!,
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                color: context.colors.error,
-                              ),
-                            ),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            size: 100,
-                            color: context.colors.primary,
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            'Verificacion Correcta!!',
-                            style: context.textTheme.headlineMedium?.copyWith(
-                              color: context.colors.primary,
-                            ),
-                          ),
-                        ],
+                child: Column(
+                  children: [
+                    Text(
+                      textAlign: TextAlign.center,
+                      'Verifica tu correo electronico',
+                      style: context.textTheme.headlineMedium?.copyWith(
+                        color: context.colors.primary,
                       ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      textAlign: TextAlign.center,
+                      'Hemos enviado una link de verificacion a tu correo revisa la bandeja de entrada, despues de la confirmacion presiona el siguiente boton:',
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        color: context.colors.primary,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 12),
+                      child: viewModel.isLoading
+                          ? CircularProgressIndicator()
+                          : SizedBox(
+                              height: 60,
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  viewModel.checkEmailVerification();
+                                },
+                                child: Text('Confirmar'),
+                              ),
+                            ),
+                    ),
+                    SizedBox(height: 12),
+                    SizedBox(
+                      child: LogoutButton(
+                        viewModel: LogoutViewModel(
+                          authRepository: context.read(),
+                        ),
+                      ),
+                    ),
+                    if (viewModel.errorMessage != null)
+                      Text(
+                        viewModel.errorMessage!,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: context.colors.error,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

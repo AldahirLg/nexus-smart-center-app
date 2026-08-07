@@ -32,4 +32,10 @@ class FirebaseAuthService {
   Stream<User?> authStateChanges() {
     return _auth.authStateChanges();
   }
+
+  Future<String?> getTokenId({bool forceRefresh = false}) {
+    final user = _auth.currentUser;
+    if (user == null) return Future.value(null);
+    return user.getIdToken(forceRefresh);
+  }
 }

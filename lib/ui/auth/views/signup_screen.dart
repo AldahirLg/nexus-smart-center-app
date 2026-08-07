@@ -12,6 +12,7 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      showNavigationBar: false,
       title: 'Crear Cuenta',
       showHeader: true,
       body: Column(

@@ -11,6 +11,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      showNavigationBar: false,
       title: 'Iniciar sesión',
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
-import 'package:nexus_smart_center/ui/core/view_models/logout_view_model.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
-import 'package:nexus_smart_center/ui/core/widgets/logout_button.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
-import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   final HomeViewModel viewModel;
@@ -13,19 +10,31 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      showNavigationBar: false,
       title: 'Inicio',
       actions: [],
       body: Column(
         children: [
-          LogoutButton(
-            viewModel: LogoutViewModel(authRepository: context.read()),
-          ),
-          Center(
-            child: Text(
-              'Bienvenido ${viewModel.currentUser?.email ?? ""}',
-              style: context.textTheme.bodyMedium,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Text(
+                    'Mis Dispositivos ${viewModel.currentUser?.email ?? ""}',
+                    style: context.textTheme.headlineMedium?.copyWith(
+                      color: context.colors.primary,
+                    ),
+                  ),
+                  Text(
+                    textAlign: TextAlign.center,
+                    'Presiona sobre las tarjetas para acceder a tus dispositivos',
+                  ),
+                ],
+              ),
             ),
           ),
+          Expanded(flex: 5, child: Center()),
         ],
       ),
       showHeader: false,

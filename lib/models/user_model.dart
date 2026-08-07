@@ -1,11 +1,11 @@
 class UserModel {
-  final String id;
+  final String uid;
   final String email;
   final String? displayName;
   final bool isEmailVerified;
 
   const UserModel({
-    required this.id,
+    required this.uid,
     required this.email,
     this.displayName,
     required this.isEmailVerified,

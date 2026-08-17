@@ -9,7 +9,15 @@ class ApiService {
       '/user/auth/sync',
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
+    return response;
+  }
 
+  Future<Response> claimToken(String idToken, String deviceId) async {
+    final response = await _dio.post(
+      '/device/claim',
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+      data: {'deviceId': deviceId},
+    );
     return response;
   }
 }

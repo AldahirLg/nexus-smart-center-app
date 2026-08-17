@@ -9,6 +9,7 @@ import 'package:nexus_smart_center/ui/auth/views/verify_email_screen.dart';
 import 'package:nexus_smart_center/ui/auth/views/welcome_screen.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
+import 'package:nexus_smart_center/ui/devices/view_models/add_device_view_model.dart';
 import 'package:nexus_smart_center/ui/devices/views/add_device.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 import 'package:nexus_smart_center/ui/home/views/home_screen.dart';
@@ -126,7 +127,12 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
     ),
     GoRoute(
       path: Routes.addDevice,
-      builder: (context, state) => AddDeviceScreen(),
+      builder: (context, state) => AddDeviceScreen(
+        viewModel: AddDeviceViewModel(
+          authRepository: context.read(),
+          apiRepository: context.read(),
+        ),
+      ),
     ),
   ],
 );

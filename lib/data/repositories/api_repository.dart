@@ -23,4 +23,17 @@ class ApiRepository {
     Map<String, dynamic> dataUser = response.data;
     return ApiUserDto.fromJson(dataUser).toDomain();
   }
+
+  Future<dynamic> claimToken(String tokenId, String deviceId) async {
+    final response = await _apiService.claimToken(tokenId, deviceId);
+    return response;
+  }
+
+  Future<void> emitEvent(String event, dynamic data) async {
+    _socketClient.emit(event, data);
+  }
+
+  Future<void> onEvent(String event, Function(dynamic) handler) async {
+    _socketClient.on(event, handler);
+  }
 }

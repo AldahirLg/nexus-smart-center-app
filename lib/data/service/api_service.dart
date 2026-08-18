@@ -20,4 +20,12 @@ class ApiService {
     );
     return response;
   }
+
+  Future<Response> getDevices(String idToken) async {
+    final response = await _dio.get(
+      '/device/',
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+    );
+    return response;
+  }
 }

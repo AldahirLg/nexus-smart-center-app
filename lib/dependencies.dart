@@ -20,7 +20,7 @@ class Dependencies extends StatelessWidget {
       providers: [
         // Servicios Base & HTTP Clients
         Provider(
-          create: (_) => SocketClient(serverUrl: 'http://10.0.2.2:5000'),
+          create: (_) => SocketClient(serverUrl: 'http://192.168.100.12:5000'),
         ),
 
         Provider<Dio>(create: (_) => ApiClient.instance.dio),

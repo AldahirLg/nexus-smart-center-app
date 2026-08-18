@@ -24,16 +24,14 @@ class AddDeviceViewModel extends ChangeNotifier {
 
   void claimHandler(dynamic data) {
     print(data);
-
     if (data['success'] == true && data['status'] == 'CLAIMED') {
       _claimStatus = ClaimStatus.claimSuccess;
-
       notifyListeners();
     }
   }
 
   Future<String> returnDeviceId() async {
-    return 'SWITCH-AVSBFGTTFEFM';
+    return 'SWITCH-AVSBSGTTFEFS';
   }
 
   Future<dynamic> getClaimToken(String deviceId) async {
@@ -65,7 +63,6 @@ class AddDeviceViewModel extends ChangeNotifier {
     } catch (e) {
       _claimStatus = ClaimStatus.error;
       _messageError = e.toString();
-
       notifyListeners();
     }
   }

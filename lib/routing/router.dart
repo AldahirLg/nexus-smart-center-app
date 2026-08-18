@@ -82,7 +82,6 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
       routes: [
         GoRoute(
           path: Routes.home,
-
           pageBuilder: (context, state) => NoTransitionPage(
             child: HomeScreen(
               viewModel: HomeViewModel(

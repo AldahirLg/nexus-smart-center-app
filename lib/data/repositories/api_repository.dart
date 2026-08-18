@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:nexus_smart_center/data/model/api_device_dto.dart';
 import 'package:nexus_smart_center/data/model/api_user_dto.dart';
 import 'package:nexus_smart_center/data/service/api_service.dart';
 import 'package:nexus_smart_center/data/service/socket_client.dart';
 import 'package:nexus_smart_center/models/api_user_model.dart';
+import 'package:nexus_smart_center/models/device_model.dart';
 
 class ApiRepository {
   ApiRepository({
@@ -35,5 +37,18 @@ class ApiRepository {
 
   Future<void> onEvent(String event, Function(dynamic) handler) async {
     _socketClient.on(event, handler);
+  }
+
+  Future<List<DeviceModel>> getDevices(String idToken) async {
+    final devicesRow = await _apiService.getDevices(idToken);
+    if (devicesRow.statusCode != 200) {
+      throw Exception('Error al obtener dispositivos');
+    }
+
+    List<dynamic> devices = devicesRow.data;
+
+    return devices
+        .map((json) => ApiDeviceDto.fromJson(json).toDomain())
+        .toList();
   }
 }

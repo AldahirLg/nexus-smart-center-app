@@ -74,7 +74,7 @@ class SessionManager extends ChangeNotifier {
 
         _apiUser = await _apiRepository.synchronizeUser(token);
         _status = SessionStatus.authenticated;
-
+        //await _apiRepository.getDevices(token);
         debugPrint(
           '✅ SessionManager: Sincronización exitosa. Estado: AUTHENTICATED',
         );

@@ -7,6 +7,8 @@ import 'package:nexus_smart_center/ui/auth/views/login_screen.dart';
 import 'package:nexus_smart_center/ui/auth/views/signup_screen.dart';
 import 'package:nexus_smart_center/ui/auth/views/verify_email_screen.dart';
 import 'package:nexus_smart_center/ui/auth/views/welcome_screen.dart';
+import 'package:nexus_smart_center/ui/claim/view_models/ble_scan_view_model.dart';
+import 'package:nexus_smart_center/ui/claim/views/ble_scan_screen.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/add_device_view_model.dart';
@@ -25,6 +27,7 @@ abstract final class Routes {
   static const String verMas = '/ver_mas';
   static const String verifyEmail = '/verify_email';
   static const String splash = '/splash';
+  static const String scanDevices = '/scan';
   static const shellRoutes = [home, verMas];
   static const publicRoutes = [welcom, signup, login];
 }
@@ -132,6 +135,14 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
           apiRepository: context.read(),
         ),
       ),
+    ),
+    GoRoute(
+      path: Routes.scanDevices,
+      builder: (context, state) {
+        final viewmodel = BleScanViewModel(bleRepository: context.read());
+        viewmodel.startScan();
+        return BleScanScreen(viewmodel: viewmodel);
+      },
     ),
   ],
 );

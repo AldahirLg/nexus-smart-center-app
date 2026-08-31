@@ -2,9 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/data/repositories/api_repository.dart';
 import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
+import 'package:nexus_smart_center/data/repositories/ble_repository.dart';
 import 'package:nexus_smart_center/data/service/api_client.dart';
 import 'package:nexus_smart_center/data/service/api_service.dart';
 import 'package:nexus_smart_center/data/service/auth_service.dart';
+import 'package:nexus_smart_center/data/service/ble_service.dart';
 import 'package:nexus_smart_center/data/service/socket_client.dart';
 import 'package:nexus_smart_center/domain/session_manager.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +24,7 @@ class Dependencies extends StatelessWidget {
         Provider(
           create: (_) => SocketClient(serverUrl: 'http://192.168.100.12:5000'),
         ),
-
+        Provider<BLEservice>(create: (_) => BLEservice()),
         Provider<Dio>(create: (_) => ApiClient.instance.dio),
         Provider(create: (_) => FirebaseAuthService()),
         Provider<ApiService>(
@@ -38,6 +40,10 @@ class Dependencies extends StatelessWidget {
         ),
         Provider(
           create: (context) => AuthRepository(authService: context.read()),
+        ),
+
+        Provider(
+          create: (context) => BleRepository(bleService: context.read()),
         ),
 
         // Session / State Manager

@@ -55,68 +55,68 @@ class HomeScreen extends StatelessWidget {
                           final device = viewModel.devices[index];
 
                           return Card(
-                            elevation: 2,
+                            elevation: 1,
                             shadowColor: context.colors.shadow,
                             color: context.colors.surface,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
                             clipBehavior: Clip.antiAlias,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    context.colors.secondary.withValues(
-                                      alpha: .8,
+                            child: Stack(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: SizedBox(
+                                    width: 150,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              height: 50,
+                                              width: 50,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: context.colors.secondary
+                                                    .withValues(alpha: .3),
+                                              ),
+                                              child: Icon(
+                                                Icons.hub,
+                                                color: context.colors.secondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 12),
+                                        Text(
+                                          device.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: context.textTheme.bodySmall,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          device.type,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: context.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color: context.colors.surface,
+                                              ),
+                                        ),
+                                      ],
                                     ),
-                                    context.colors.secondary.withValues(
-                                      alpha: .4,
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-
-                                        color: context.colors.surface,
-                                      ),
-                                      width: 50,
-                                      height: 50,
-                                      child: Icon(
-                                        Icons.devices,
-                                        size: 30,
-                                        color: context.colors.secondary,
-                                      ),
-                                    ),
-
-                                    const Spacer(),
-
-                                    Text(
-                                      device.name,
-                                      style: context.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            color: context.colors.surface,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-
-                                    const SizedBox(height: 4),
-
-                                    Text(
-                                      device.type,
-                                      style: context.textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              ],
                             ),
                           );
                         },

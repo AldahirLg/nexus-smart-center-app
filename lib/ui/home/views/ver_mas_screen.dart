@@ -58,7 +58,7 @@ class VerMasScreen extends StatelessWidget {
                       bodyText:
                           'Realiza la vinculacion de los dispositivos a tu cuenta',
                       onTap: () {
-                        context.push(Routes.addDevice);
+                        context.push(Routes.scanDevices);
                       },
                     ),
                     Divider(

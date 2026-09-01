@@ -44,7 +44,9 @@ class VerMasScreen extends StatelessWidget {
                       title: 'Perfil',
                       bodyText:
                           'Administra las funciones disponibles de tu perfil',
-                      onTap: () {},
+                      onTap: () {
+                        context.push(Routes.addDevice);
+                      },
                     ),
                     Divider(
                       color: context.colors.primary.withValues(alpha: .2),

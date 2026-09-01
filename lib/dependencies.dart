@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/data/repositories/api_repository.dart';
 import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
-import 'package:nexus_smart_center/data/repositories/ble_repository.dart';
+import 'package:nexus_smart_center/data/repositories/claim_repository.dart';
 import 'package:nexus_smart_center/data/service/api_client.dart';
 import 'package:nexus_smart_center/data/service/api_service.dart';
 import 'package:nexus_smart_center/data/service/auth_service.dart';
@@ -43,7 +43,11 @@ class Dependencies extends StatelessWidget {
         ),
 
         Provider(
-          create: (context) => BleRepository(bleService: context.read()),
+          create: (context) => ClaimRepository(
+            ble: context.read(),
+            auth: context.read(),
+            api: context.read(),
+          ),
         ),
 
         // Session / State Manager

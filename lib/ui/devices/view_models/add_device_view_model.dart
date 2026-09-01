@@ -55,7 +55,7 @@ class AddDeviceViewModel extends ChangeNotifier {
 
       final tokenClaim = await getClaimToken(deviceId);
 
-      final success = await tokenClaimToDevice(tokenClaim);
+      final success = await (tokenClaim);
 
       if (success) {
         await onClaimStatus(deviceId);

@@ -25,7 +25,6 @@ class SignUpScreen extends StatelessWidget {
               color: context.colors.primary,
             ),
           ),
-
           Expanded(
             flex: 5,
             child: ListenableBuilder(

@@ -1,3 +1,4 @@
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nexus_smart_center/domain/session_manager.dart';
 import 'package:nexus_smart_center/ui/auth/view_models/login_view_model.dart';
@@ -8,7 +9,9 @@ import 'package:nexus_smart_center/ui/auth/views/signup_screen.dart';
 import 'package:nexus_smart_center/ui/auth/views/verify_email_screen.dart';
 import 'package:nexus_smart_center/ui/auth/views/welcome_screen.dart';
 import 'package:nexus_smart_center/ui/claim/view_models/ble_scan_view_model.dart';
+import 'package:nexus_smart_center/ui/claim/view_models/claim_screen_view_model.dart';
 import 'package:nexus_smart_center/ui/claim/views/ble_scan_screen.dart';
+import 'package:nexus_smart_center/ui/claim/views/claim_screen.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/add_device_view_model.dart';
@@ -28,6 +31,7 @@ abstract final class Routes {
   static const String verifyEmail = '/verify_email';
   static const String splash = '/splash';
   static const String scanDevices = '/scan';
+  static const String claimDevice = '/claim_device';
   static const shellRoutes = [home, verMas];
   static const publicRoutes = [welcom, signup, login];
 }
@@ -142,6 +146,15 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
         final viewmodel = BleScanViewModel(bleRepository: context.read());
         viewmodel.startScan();
         return BleScanScreen(viewmodel: viewmodel);
+      },
+    ),
+    GoRoute(
+      path: Routes.claimDevice,
+      builder: (context, state) {
+        final BluetoothDevice deviceId = state.extra as BluetoothDevice;
+        final viewModel = ClaimDeviceViewModel(bleRepository: context.read());
+        viewModel.claimDevice(deviceId);
+        return ClaimDeviceScreen(viewModel: viewModel);
       },
     ),
   ],

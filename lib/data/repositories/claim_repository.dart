@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:nexus_smart_center/data/model/ble_parse_message.dart';
@@ -10,10 +11,13 @@ import 'package:nexus_smart_center/data/service/ble_service.dart';
 enum StateProvisioning {
   idle,
   connectingBle,
+  requestingDeviceId,
   working,
   connectingWifi,
   testingWifi,
-  success,
+  successWifi,
+  awaitServer,
+  serverSucces,
   failed,
   error,
   timeout,
@@ -35,6 +39,9 @@ class ClaimRepository {
   static final Guid _serviceUuid = Guid('6E400001-B5A3-F393-E0A9-E50E24DCCA9E');
   static final Guid _rxCharUuid = Guid('6E400002-B5A3-F393-E0A9-E50E24DCCA9E');
   static final Guid _txCharUuid = Guid('6E400003-B5A3-F393-E0A9-E50E24DCCA9E');
+
+  static const Duration _deviceIdTimeout = Duration(seconds: 10);
+  static const Duration _provisioningTimeout = Duration(seconds: 60);
 
   final StreamController<StateProvisioning> _provisioningStateController =
       StreamController<StateProvisioning>.broadcast();
@@ -69,33 +76,84 @@ class ClaimRepository {
     await device.disconnect();
   }
 
-  Future<String> tokenClaim(BluetoothDevice device) async {
+  Future<String> tokenClaim(String deviceUid) async {
     final tokenId = await _auth.getTokenId();
 
     if (tokenId == null || tokenId.isEmpty) {
       throw Exception('No se pudo obtener el token de autenticación.');
     }
 
-    final response = await _api.claimToken(tokenId, device.remoteId.str);
+    try {
+      final response = await _api.claimToken(tokenId, deviceUid);
 
-    final claimToken = response.data['claimToken'];
-
-    if (claimToken == null) {
-      throw Exception('La API no devolvió claimToken.');
+      final claimToken = response.data['claimToken'];
+      if (claimToken == null) {
+        throw Exception('La API no devolvió claimToken.');
+      }
+      return claimToken.toString();
+    } on DioException catch (e) {
+      final backendMessage = e.response?.data['message'] ?? e.message;
+      debugPrint('[CLAIM] Backend rechazó el claim: $backendMessage');
+      throw Exception(backendMessage);
     }
+  }
 
-    return claimToken.toString();
+  Future<String> _requestDeviceId({
+    required BluetoothCharacteristic rxChar,
+    required Stream<Map<String, dynamic>> messages,
+  }) async {
+    final completer = Completer<String>();
+
+    final sub = messages.listen((data) {
+      if (data['status'] == 'device_id' && !completer.isCompleted) {
+        final deviceUid = data['device_uid'];
+        if (deviceUid is String && deviceUid.isNotEmpty) {
+          completer.complete(deviceUid);
+        } else {
+          completer.completeError(
+            Exception(
+              'El dispositivo respondió device_id sin device_uid válido.',
+            ),
+          );
+        }
+      }
+    });
+
+    try {
+      final payload = jsonEncode({'type': 'get_device_id'});
+      final payloadBytes = Uint8List.fromList(utf8.encode('$payload\n'));
+
+      debugPrint('[BLE] Solicitando device_uid: $payload');
+
+      await rxChar.write(
+        payloadBytes,
+        withoutResponse:
+            rxChar.properties.writeWithoutResponse && !rxChar.properties.write,
+      );
+
+      return await completer.future.timeout(_deviceIdTimeout);
+    } on TimeoutException {
+      throw Exception(
+        'El dispositivo no respondió con su device_uid dentro del tiempo esperado.',
+      );
+    } finally {
+      await sub.cancel();
+    }
   }
 
   Future<Map<String, dynamic>> claimDevice(BluetoothDevice device) async {
-    const String ssid = 'Rios_Net';
-    const String password = '5Roble162';
+    const String ssid = 'INFINITUM83A0_2.4';
+    const String password = '5Roble1620';
 
     final completer = Completer<Map<String, dynamic>>();
     final parser = BleMessageParser();
 
+    final messageController =
+        StreamController<Map<String, dynamic>>.broadcast();
+
     StreamSubscription<List<int>>? valueSub;
     StreamSubscription<BluetoothConnectionState>? disconnectSub;
+    StreamSubscription<Map<String, dynamic>>? provisioningSub;
     BluetoothCharacteristic? rxChar;
     BluetoothCharacteristic? txChar;
 
@@ -147,7 +205,15 @@ class ClaimRepository {
 
             for (final message in messages) {
               debugPrint('[BLE] Mensaje completo: $message');
-              _processMessage(message: message, completer: completer);
+
+              final decoded = jsonDecode(message);
+              if (decoded is! Map<String, dynamic>) {
+                throw const FormatException(
+                  'La respuesta BLE no es un objeto JSON.',
+                );
+              }
+
+              messageController.add(decoded);
             }
           } catch (e, stackTrace) {
             debugPrint('[BLE] Error procesando mensaje: $e');
@@ -170,7 +236,18 @@ class ClaimRepository {
         },
       );
 
-      final claimToken = await tokenClaim(device);
+      provisioningSub = messageController.stream
+          .where((data) => data['status'] != 'device_id')
+          .listen((data) => _processMessage(data: data, completer: completer));
+
+      _setProvisioningState(StateProvisioning.requestingDeviceId);
+      final deviceUid = await _requestDeviceId(
+        rxChar: rxChar,
+        messages: messageController.stream,
+      );
+      debugPrint('[BLE] device_uid recibido: $deviceUid');
+
+      final claimToken = await tokenClaim(deviceUid);
 
       final payload = jsonEncode({
         'type': 'provision',
@@ -190,7 +267,7 @@ class ClaimRepository {
       );
 
       try {
-        return await completer.future.timeout(const Duration(seconds: 60));
+        return await completer.future.timeout(_provisioningTimeout);
       } on TimeoutException {
         _setProvisioningState(StateProvisioning.timeout);
         return {
@@ -209,6 +286,8 @@ class ClaimRepository {
 
       await valueSub?.cancel();
       await disconnectSub?.cancel();
+      await provisioningSub?.cancel();
+      await messageController.close();
       disconnect(device);
       if (txChar != null) {
         try {
@@ -219,17 +298,10 @@ class ClaimRepository {
   }
 
   void _processMessage({
-    required String message,
+    required Map<String, dynamic> data,
     required Completer<Map<String, dynamic>> completer,
   }) {
     try {
-      final decoded = jsonDecode(message);
-
-      if (decoded is! Map<String, dynamic>) {
-        throw const FormatException('La respuesta BLE no es un objeto JSON.');
-      }
-
-      final data = decoded;
       final status = data['status'];
 
       debugPrint('[BLE] JSON: $data');
@@ -261,8 +333,8 @@ class ClaimRepository {
           debugPrint('[BLE] Status desconocido: $status');
       }
     } catch (e, stackTrace) {
-      debugPrint('[BLE] Error parseando JSON: $e');
-      debugPrint('[BLE] Mensaje: $message');
+      debugPrint('[BLE] Error procesando mensaje: $e');
+      debugPrint('[BLE] Data: $data');
 
       _setProvisioningState(StateProvisioning.error);
 

@@ -14,14 +14,13 @@ class ApiUserDto {
     required this.createdAt,
     required this.updatedAt,
   });
-
   factory ApiUserDto.fromJson(Map<String, dynamic> json) {
     return ApiUserDto(
-      uid: json['uid'],
-      email: json['email'],
-      displayName: json['display_name'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      uid: json['uid'] as String,
+      email: json['email'] as String,
+      displayName: json['name'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
 

@@ -239,9 +239,7 @@ class _AdapterOffView extends StatelessWidget {
   Future<void> _tryTurnOn() async {
     try {
       await FlutterBluePlus.turnOn();
-    } catch (_) {
-      // En iOS no se puede activar programáticamente; se ignora.
-    }
+    } catch (_) {}
   }
 
   @override

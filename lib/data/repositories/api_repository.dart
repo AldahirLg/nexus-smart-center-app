@@ -21,22 +21,9 @@ class ApiRepository {
     if (response.statusCode != 200) {
       throw Exception('Error al syncronizar usuario');
     }
-    _socketClient.connect(idToken);
+    await _socketClient.connect(idToken);
     Map<String, dynamic> dataUser = response.data;
     return ApiUserDto.fromJson(dataUser).toDomain();
-  }
-
-  Future<dynamic> claimToken(String tokenId, String deviceId) async {
-    final response = await _apiService.claimToken(tokenId, deviceId);
-    return response;
-  }
-
-  Future<void> emitEvent(String event, dynamic data) async {
-    _socketClient.emit(event, data);
-  }
-
-  Future<void> onEvent(String event, Function(dynamic) handler) async {
-    _socketClient.on(event, handler);
   }
 
   Future<List<DeviceModel>> getDevices(String idToken) async {
@@ -46,7 +33,6 @@ class ApiRepository {
     }
 
     List<dynamic> devices = devicesRow.data;
-
     return devices
         .map((json) => ApiDeviceDto.fromJson(json).toDomain())
         .toList();

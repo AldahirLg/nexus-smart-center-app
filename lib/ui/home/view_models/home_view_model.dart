@@ -10,9 +10,7 @@ class HomeViewModel extends ChangeNotifier {
     required AuthRepository authRepository,
     required ApiRepository apiRepository,
   }) : _authRepository = authRepository,
-       _apiRepository = apiRepository {
-    initialize();
-  }
+       _apiRepository = apiRepository;
 
   final AuthRepository _authRepository;
   final ApiRepository _apiRepository;
@@ -42,6 +40,8 @@ class HomeViewModel extends ChangeNotifier {
       }
 
       _devices = await _apiRepository.getDevices(token);
+
+      print('Dispositivos en ViewModel: $_devices');
     } catch (e) {
       _messageError = e.toString();
     } finally {

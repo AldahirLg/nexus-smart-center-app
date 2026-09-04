@@ -74,24 +74,19 @@ class SessionManager extends ChangeNotifier {
 
         _apiUser = await _apiRepository.synchronizeUser(token);
         _status = SessionStatus.authenticated;
-        //await _apiRepository.getDevices(token);
         debugPrint(
-          '✅ SessionManager: Sincronización exitosa. Estado: AUTHENTICATED',
+          'SessionManager: Sincronización exitosa. Estado: AUTHENTICATED',
         );
       } else {
         _status = SessionStatus.unauthenticated;
       }
     } catch (e, stackTrace) {
-      // Si falla el parseo de ApiUserDto, lo verás detallado aquí
-      debugPrint('❌ SessionManager Error en Sync/Parseo: $e');
+      debugPrint('SessionManager Error en Sync/Parseo: $e');
       debugPrint(stackTrace.toString());
       _status = SessionStatus.unauthenticated;
     }
 
     notifyListeners();
-    debugPrint(
-      '📢 SessionManager: notifyListeners() llamado. Estado actual: $_status',
-    );
   }
 
   @override

@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:nexus_smart_center/data/repositories/claim_repository.dart';
+import 'package:nexus_smart_center/data/repositories/ble_repository.dart';
 
 class BleScanViewModel extends ChangeNotifier {
-  final ClaimRepository _bleRepository;
+  final BleRepository _bleRepository;
 
   late final StreamSubscription<List<ScanResult>> _scanSubscription;
   late final StreamSubscription<BluetoothAdapterState> _adapterSubscription;
@@ -19,7 +19,7 @@ class BleScanViewModel extends ChangeNotifier {
   bool get isScanning => _isScanning;
   List<ScanResult> get results => List.unmodifiable(_results);
 
-  BleScanViewModel({required ClaimRepository bleRepository})
+  BleScanViewModel({required BleRepository bleRepository})
     : _bleRepository = bleRepository {
     _scanSubscription = _bleRepository.scanResults.listen((results) {
       _results = results;

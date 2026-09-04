@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketClient {
@@ -5,39 +7,75 @@ class SocketClient {
   final String serverUrl;
 
   IO.Socket? _socket;
+  Completer<void>? _connectCompleter;
 
   bool get isConnected => _socket?.connected ?? false;
 
-  Future<void> connect(String token) async {
-    if (_socket != null) return;
+  Future<void> connect(
+    String token, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    if (isConnected) return;
+    if (_connectCompleter != null && !_connectCompleter!.isCompleted) {
+      return _connectCompleter!.future.timeout(timeout);
+    }
 
-    _socket = IO.io(
+    _connectCompleter = Completer<void>();
+
+    if (_socket == null) {
+      _socket = _buildSocket(token);
+    } else {
+      _socket!.io.options?['auth'] = {'token': token};
+    }
+
+    _socket!.connect();
+
+    try {
+      await _connectCompleter!.future.timeout(timeout);
+    } on TimeoutException {
+      throw Exception('Timeout al conectar el socket.');
+    }
+  }
+
+  IO.Socket _buildSocket(String token) {
+    final socket = IO.io(
       serverUrl,
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()
           .enableForceNew()
-          .setAuth(({'token': token}))
+          .setAuth({'token': token})
           .build(),
     );
 
-    _socket!.connect();
-
-    _socket!.onConnect((_) {
+    socket.onConnect((_) {
       print('socket conectado');
+      if (_connectCompleter != null && !_connectCompleter!.isCompleted) {
+        _connectCompleter!.complete();
+      }
     });
 
-    _socket!.onDisconnect((_) {
+    socket.onConnectError((error) {
+      print('connect_error: $error');
+      if (_connectCompleter != null && !_connectCompleter!.isCompleted) {
+        _connectCompleter!.completeError(
+          Exception('Error al conectar el socket: $error'),
+        );
+      }
+    });
+
+    socket.onError((error) {
+      print('socket error: $error');
+      if (_connectCompleter != null && !_connectCompleter!.isCompleted) {
+        _connectCompleter!.completeError(Exception('Error de socket: $error'));
+      }
+    });
+
+    socket.onDisconnect((_) {
       print('Socket desconectado');
     });
 
-    _socket!.onConnectError((error) {
-      print(error);
-    });
-
-    _socket!.onerror((error) {
-      print(error);
-    });
+    return socket;
   }
 
   void emit(String event, dynamic data) {
@@ -59,5 +97,6 @@ class SocketClient {
   void dispose() {
     _socket?.dispose();
     _socket = null;
+    _connectCompleter = null;
   }
 }

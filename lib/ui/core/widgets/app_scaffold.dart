@@ -28,7 +28,7 @@ class AppScaffold extends StatelessWidget {
       bottomNavigationBar: !showNavigationBar
           ? null
           : SizedBox(
-              height: 70,
+              height: 80,
               child: BottomNavigationBar(
                 items: const [
                   BottomNavigationBarItem(

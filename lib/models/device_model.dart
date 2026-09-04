@@ -1,13 +1,8 @@
-class DeviceModel {
-  final int id;
-  final String uid;
-  final String name;
-  final String type;
+enum DeviceType { medidor, controlDeNivel, unknown }
 
-  const DeviceModel({
-    required this.id,
-    required this.uid,
-    required this.name,
-    required this.type,
-  });
+class DeviceModel {
+  final String id;
+  final String name;
+  final DeviceType type;
+  const DeviceModel({required this.id, required this.name, required this.type});
 }

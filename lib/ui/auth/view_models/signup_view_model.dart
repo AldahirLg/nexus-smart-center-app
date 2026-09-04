@@ -14,7 +14,7 @@ class SignupViewModel extends ChangeNotifier {
   bool get termsAndConditions => _termsAndConditions;
   bool _showTermsError = false;
   bool get showTermsError => _showTermsError;
-  //Form
+  
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();

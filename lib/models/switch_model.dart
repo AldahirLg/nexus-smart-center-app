@@ -4,7 +4,6 @@ class SwitchModel extends DeviceModel {
   final bool isOn;
   const SwitchModel({
     required super.id,
-    required super.uid,
     required super.name,
     required super.type,
     required this.isOn,

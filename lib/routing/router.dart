@@ -1,6 +1,7 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nexus_smart_center/domain/session_manager.dart';
+import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/ui/auth/view_models/login_view_model.dart';
 import 'package:nexus_smart_center/ui/auth/view_models/signup_view_model.dart';
 import 'package:nexus_smart_center/ui/auth/view_models/verify_email_view_model.dart';
@@ -14,8 +15,8 @@ import 'package:nexus_smart_center/ui/claim/views/ble_scan_screen.dart';
 import 'package:nexus_smart_center/ui/claim/views/claim_screen.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
-import 'package:nexus_smart_center/ui/devices/view_models/add_device_view_model.dart';
-import 'package:nexus_smart_center/ui/devices/views/add_device.dart';
+import 'package:nexus_smart_center/ui/devices/view_models/medidor_view_model.dart';
+import 'package:nexus_smart_center/ui/devices/views/medidor_screen.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 import 'package:nexus_smart_center/ui/home/views/home_screen.dart';
 import 'package:nexus_smart_center/ui/home/views/ver_mas_screen.dart';
@@ -32,6 +33,7 @@ abstract final class Routes {
   static const String splash = '/splash';
   static const String scanDevices = '/scan';
   static const String claimDevice = '/claim_device';
+  static const String medidor = '/medidor';
   static const shellRoutes = [home, verMas];
   static const publicRoutes = [welcom, signup, login];
 }
@@ -89,14 +91,16 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
       routes: [
         GoRoute(
           path: Routes.home,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: HomeScreen(
-              viewModel: HomeViewModel(
-                authRepository: context.read(),
-                apiRepository: context.read(),
-              ),
-            ),
-          ),
+          pageBuilder: (context, state) {
+            final viewModel = HomeViewModel(
+              authRepository: context.read(),
+              apiRepository: context.read(),
+            );
+
+            viewModel.initialize();
+
+            return NoTransitionPage(child: HomeScreen(viewModel: viewModel));
+          },
         ),
         GoRoute(
           path: Routes.verMas,
@@ -132,15 +136,6 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
       builder: (context, state) => const WelcomeScreen(),
     ),
     GoRoute(
-      path: Routes.addDevice,
-      builder: (context, state) => AddDeviceScreen(
-        viewModel: AddDeviceViewModel(
-          authRepository: context.read(),
-          apiRepository: context.read(),
-        ),
-      ),
-    ),
-    GoRoute(
       path: Routes.scanDevices,
       builder: (context, state) {
         final viewmodel = BleScanViewModel(bleRepository: context.read());
@@ -152,10 +147,27 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
       path: Routes.claimDevice,
       builder: (context, state) {
         final BluetoothDevice deviceId = state.extra as BluetoothDevice;
-        final viewModel = ClaimDeviceViewModel(bleRepository: context.read());
+        final viewModel = ClaimDeviceViewModel(
+          bleRepository: context.read(),
+          claimRepository: context.read(),
+        );
         viewModel.claimDevice(deviceId);
         return ClaimDeviceScreen(viewModel: viewModel);
       },
+    ),
+
+    GoRoute(
+      path: Routes.medidor,
+      builder: ((context, state) {
+        final DeviceModel device = state.extra as DeviceModel;
+
+        final viewmodel = MedidorViewModel(
+          realTimeRepo: context.read(),
+          device: device,
+        );
+        viewmodel.initialize(device.id);
+        return MedidorScreen(viewModel: viewmodel);
+      }),
     ),
   ],
 );

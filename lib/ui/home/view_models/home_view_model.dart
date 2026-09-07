@@ -10,7 +10,9 @@ class HomeViewModel extends ChangeNotifier {
     required AuthRepository authRepository,
     required ApiRepository apiRepository,
   }) : _authRepository = authRepository,
-       _apiRepository = apiRepository;
+       _apiRepository = apiRepository {
+    initialize();
+  }
 
   final AuthRepository _authRepository;
   final ApiRepository _apiRepository;

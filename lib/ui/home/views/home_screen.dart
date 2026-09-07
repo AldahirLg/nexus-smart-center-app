@@ -3,14 +3,47 @@ import 'package:go_router/go_router.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/nexus_font/nexus_font_icons.dart';
 import 'package:nexus_smart_center/routing/router.dart';
+import 'package:nexus_smart_center/ui/core/route_observer.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 import 'package:nexus_smart_center/ui/home/widgets/device_card.dart';
 import 'package:nexus_smart_center/unen_font/unen_font_icons.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final HomeViewModel viewModel;
   const HomeScreen({super.key, required this.viewModel});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with RouteAware {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Se llama cuando esta pantalla se muestra por primera vez
+  @override
+  void didPush() {
+    widget.viewModel.initialize();
+  }
+
+  // Se llama cuando regresas a esta pantalla (ej. pop desde /medidor)
+  @override
+  void didPopNext() {
+    widget.viewModel.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +73,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 12),
                     Text(
-                      'UNEN SMART CENTER ${viewModel.currentUser?.email ?? ""}',
+                      'UNEN SMART CENTER ${widget.viewModel.currentUser?.email ?? ""}',
                       style: context.textTheme.headlineMedium,
                     ),
                   ],
@@ -49,13 +82,13 @@ class HomeScreen extends StatelessWidget {
                 Divider(height: 5, color: context.colors.secondary),
 
                 ListenableBuilder(
-                  listenable: viewModel,
+                  listenable: widget.viewModel,
                   builder: (context, child) {
                     return Center(
                       child: (Text(
-                        viewModel.devices.isEmpty
+                        widget.viewModel.devices.isEmpty
                             ? 'No cuentas con ningun dispositivo'
-                            : 'Actualmente tienes ${viewModel.devices.length} dispositivos',
+                            : 'Actualmente tienes ${widget.viewModel.devices.length} dispositivos',
                       )),
                     );
                   },
@@ -67,17 +100,17 @@ class HomeScreen extends StatelessWidget {
         Expanded(
           flex: 6,
           child: ListenableBuilder(
-            listenable: viewModel,
+            listenable: widget.viewModel,
             builder: (context, state) {
-              if (viewModel.isLoading) {
+              if (widget.viewModel.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
 
               return ListView.builder(
                 padding: const EdgeInsets.all(24),
-                itemCount: viewModel.devices.length,
+                itemCount: widget.viewModel.devices.length,
                 itemBuilder: (context, index) {
-                  final device = viewModel.devices[index];
+                  final device = widget.viewModel.devices[index];
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),

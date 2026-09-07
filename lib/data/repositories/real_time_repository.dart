@@ -13,43 +13,28 @@ class RealTimeRepository {
 
   Future<void> onDevice(
     String deviceId,
+    String deviceType,
     dynamic Function(dynamic) onInitialData,
     dynamic Function(dynamic) onMeasurement,
   ) async {
     await _ensureConnection();
 
-    _socket.on('medidor:init', onInitialData);
-    _socket.on('medidor', onMeasurement);
+    _socket.on('$deviceType:updated', onInitialData);
+    _socket.on(deviceType, onMeasurement);
 
     try {
-      _socket.emit('device', {'uid': deviceId});
+      _socket.emit('device', {'uid': deviceId, 'type': deviceType});
     } catch (e) {
       throw Exception('No se pudo establecer conexión con el dispositivo');
     }
   }
 
-  Future<void> updateMedidor({
-    required String deviceId,
-    required double height,
-    required double levelHigh,
-    required double levelLow,
-    required bool alert,
-    required dynamic Function(dynamic) handler,
-  }) async {
+  Future<void> updateParameters({required String type, dynamic data}) async {
     await _ensureConnection();
-
-    _socket.on('medidor:updated', handler);
-
     try {
-      _socket.emit('medidor:update', {
-        'deviceId': deviceId,
-        'height': height,
-        'levelHigh': levelHigh,
-        'levelLow': levelLow,
-        'alert': alert,
-      });
+      _socket.emit('$type:update', data);
     } catch (e) {
-      throw Exception('No se pudo actualizar la configuración del medidor');
+      throw Exception('No se pudo actualizar la configuración del $type');
     }
   }
 

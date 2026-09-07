@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
+import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/medidor_view_model.dart';
 
@@ -19,7 +20,7 @@ class _MedidorScreenState extends State<MedidorScreen> {
   void initState() {
     super.initState();
 
-    widget.viewModel.initialize(widget.viewModel.device.id);
+    //widget.viewModel.initialize(widget.viewModel.device.id);
   }
 
   void _onNavigationTap(int index) {
@@ -99,7 +100,7 @@ class _MedidorHomePage extends StatelessWidget {
                     ),
                     FractionallySizedBox(
                       widthFactor: 1,
-                      heightFactor: .8,
+                      heightFactor: percent / 100,
                       alignment: Alignment.bottomCenter,
                       child: Container(color: context.colors.primary),
                     ),
@@ -139,7 +140,7 @@ class _MedidorHomePage extends StatelessWidget {
                   _InfoRow(
                     icon: Icons.height,
                     title: 'Altura',
-                    value: '${viewModel.height.toInt()} cm',
+                    value: '${viewModel.height} cm',
                   ),
                 ],
               ),
@@ -164,11 +165,11 @@ class _MedidorHomePage extends StatelessWidget {
             child: ListTile(
               leading: Icon(
                 viewModel.stateSensor
-                    ? Icons.warning_rounded
-                    : Icons.check_circle,
+                    ? Icons.check_circle
+                    : Icons.warning_rounded,
                 color: viewModel.stateSensor
-                    ? context.colors.error
-                    : context.colors.primary,
+                    ? context.colors.primary
+                    : context.colors.error,
               ),
               title: Text(
                 'Estado de sensor :',
@@ -176,8 +177,8 @@ class _MedidorHomePage extends StatelessWidget {
               ),
               subtitle: Text(
                 viewModel.stateSensor
-                    ? 'El sensor reporta una condición de alerta.'
-                    : 'El sensor funciona correctamente.',
+                    ? 'El sensor funciona correctamente.'
+                    : 'El sensor reporta fallas en la lectura.',
               ),
             ),
           ),
@@ -214,64 +215,20 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _MedidorSettingsPage extends StatefulWidget {
+class _MedidorSettingsPage extends StatelessWidget {
   final MedidorViewModel viewModel;
 
   const _MedidorSettingsPage({required this.viewModel});
 
-  @override
-  State<_MedidorSettingsPage> createState() => _MedidorSettingsPageState();
-}
-
-class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
-  late final TextEditingController _heightController;
-  late final TextEditingController _levelHighController;
-  late final TextEditingController _levelLowController;
-
-  bool _alert = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final viewModel = widget.viewModel;
-
-    _heightController = TextEditingController(
-      text: viewModel.height > 0 ? viewModel.height.toInt().toString() : '',
-    );
-
-    _levelHighController = TextEditingController(
-      text: viewModel.levelHigh > 0
-          ? viewModel.levelHigh.toInt().toString()
-          : '',
-    );
-
-    _levelLowController = TextEditingController(
-      text: viewModel.levelLow > 0 ? viewModel.levelLow.toInt().toString() : '',
-    );
-
-    _alert = viewModel.alert;
-  }
-
-  @override
-  void dispose() {
-    _heightController.dispose();
-    _levelHighController.dispose();
-    _levelLowController.dispose();
-
-    super.dispose();
-  }
-
-  Future<void> _saveConfiguration() async {
-    final height = double.tryParse(_heightController.text);
-    final levelHigh = double.tryParse(_levelHighController.text);
-    final levelLow = double.tryParse(_levelLowController.text);
+  Future<void> _saveConfiguration(BuildContext context) async {
+    final height = int.tryParse(viewModel.heightController.text);
+    final levelHigh = int.tryParse(viewModel.levelHighController.text);
+    final levelLow = int.tryParse(viewModel.levelLowController.text);
 
     if (height == null || levelHigh == null || levelLow == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Ingresa valores válidos.')));
-
       return;
     }
 
@@ -279,7 +236,6 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('La altura debe ser mayor que 0.')),
       );
-
       return;
     }
 
@@ -291,7 +247,6 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
           ),
         ),
       );
-
       return;
     }
 
@@ -301,25 +256,24 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
           content: Text('El nivel bajo debe ser menor que el nivel alto.'),
         ),
       );
-
       return;
     }
 
-    await widget.viewModel.updateConfiguration(
-      deviceId: widget.viewModel.device.id,
+    await viewModel.updateConfiguration(
+      deviceId: viewModel.device.id,
+      type: DeviceIconMapper.getTypeString(viewModel.device.type).toLowerCase(),
       height: height,
       levelHigh: levelHigh,
       levelLow: levelLow,
-      alert: _alert,
+      alert: viewModel.alert,
     );
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
-    if (widget.viewModel.errorMessage != null) {
+    if (viewModel.errorMessage != null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(widget.viewModel.errorMessage!)));
-
+      ).showSnackBar(SnackBar(content: Text(viewModel.errorMessage!)));
       return;
     }
 
@@ -330,8 +284,6 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = widget.viewModel;
-
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
       child: Column(
@@ -341,99 +293,46 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
             'Parámetros del contenedor',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-
           const SizedBox(height: 8),
-
           Text(
             'Configura las dimensiones y niveles de alerta.',
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-
           const SizedBox(height: 24),
-
           TextFormField(
-            controller: _heightController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelStyle: context.textTheme.bodyMedium,
-              labelText: 'Altura del contenedor',
-              suffixText: 'cm',
-              prefixIcon: Icon(Icons.height, color: context.colors.primary),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: context.colors.secondary),
-              ),
-
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: context.colors.secondary,
-                  width: 2,
-                ),
-              ),
+            controller: viewModel.heightController,
+            keyboardType: TextInputType.number,
+            decoration: _inputDecoration(
+              context,
+              label: 'Altura del contenedor',
+              suffix: 'cm',
+              icon: Icons.height,
             ),
           ),
-
           const SizedBox(height: 20),
-
           TextFormField(
-            controller: _levelHighController,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelStyle: context.textTheme.bodyMedium,
-              labelText: 'Nivel alto',
-              suffixText: 'cm',
-              prefixIcon: Icon(
-                Icons.notifications,
-                color: context.colors.primary,
-              ),
-
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: context.colors.secondary),
-              ),
-
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: context.colors.secondary,
-                  width: 2,
-                ),
-              ),
+            controller: viewModel.levelHighController,
+            keyboardType: TextInputType.number,
+            decoration: _inputDecoration(
+              context,
+              label: 'Nivel alto',
+              suffix: 'cm',
+              icon: Icons.notifications,
             ),
           ),
-
           const SizedBox(height: 20),
-
           TextFormField(
-            controller: _levelLowController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelStyle: context.textTheme.bodyLarge,
-              labelText: 'Nivel bajo',
-              suffixText: 'cm',
-              prefixIcon: Icon(
-                Icons.notifications,
-                color: context.colors.primary,
-              ),
-
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: context.colors.secondary),
-              ),
-
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: context.colors.secondary,
-                  width: 2,
-                ),
-              ),
+            controller: viewModel.levelLowController,
+            keyboardType: TextInputType.number,
+            decoration: _inputDecoration(
+              context,
+              label: 'Nivel bajo',
+              suffix: 'cm',
+              icon: Icons.notifications,
             ),
           ),
-
           const SizedBox(height: 30),
           SizedBox(
             height: 50,
@@ -442,13 +341,13 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.colors.primary,
               ),
-
-              onPressed: viewModel.isSaving ? null : _saveConfiguration,
-
+              onPressed: viewModel.isSaving
+                  ? null
+                  : () => _saveConfiguration(context),
               child: viewModel.isSaving
-                  ? CircularProgressIndicator()
+                  ? const CircularProgressIndicator()
                   : Text(
-                      'Guardar Informacion',
+                      'Guardar información',
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: context.colors.surface,
                       ),
@@ -456,11 +355,9 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
             ),
           ),
           const SizedBox(height: 30),
-
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: context.colors.surface,
               boxShadow: [
                 BoxShadow(
                   blurRadius: 8,
@@ -470,22 +367,43 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
                 ),
               ],
             ),
-            child: SwitchListTile(
-              value: _alert,
-              onChanged: viewModel.isSaving
-                  ? null
-                  : (value) {
-                      setState(() {
-                        _alert = value;
-                      });
-                    },
-              title: const Text('Alertas de nivel'),
-              subtitle: const Text(
-                'Recibir una notificación en los niveles configurados',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Material(
+                color: context.colors.surface,
+                child: SwitchListTile(
+                  value: viewModel.alert,
+                  onChanged: viewModel.isSaving ? null : viewModel.setAlert,
+                  title: const Text('Alertas de nivel'),
+                  subtitle: const Text(
+                    'Recibir una notificación en los niveles configurados',
+                  ),
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(
+    BuildContext context, {
+    required String label,
+    required String suffix,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      suffixText: suffix,
+      prefixIcon: Icon(icon, color: context.colors.primary),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: context.colors.secondary),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: context.colors.secondary, width: 2),
       ),
     );
   }

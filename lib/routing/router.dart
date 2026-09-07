@@ -13,6 +13,7 @@ import 'package:nexus_smart_center/ui/claim/view_models/ble_scan_view_model.dart
 import 'package:nexus_smart_center/ui/claim/view_models/claim_screen_view_model.dart';
 import 'package:nexus_smart_center/ui/claim/views/ble_scan_screen.dart';
 import 'package:nexus_smart_center/ui/claim/views/claim_screen.dart';
+import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/medidor_view_model.dart';
@@ -96,9 +97,6 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
               authRepository: context.read(),
               apiRepository: context.read(),
             );
-
-            viewModel.initialize();
-
             return NoTransitionPage(child: HomeScreen(viewModel: viewModel));
           },
         ),
@@ -165,7 +163,7 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
           realTimeRepo: context.read(),
           device: device,
         );
-        viewmodel.initialize(device.id);
+        viewmodel.init(device.id, DeviceIconMapper.getTypeString(device.type));
         return MedidorScreen(viewModel: viewmodel);
       }),
     ),

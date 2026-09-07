@@ -11,6 +11,10 @@ class MedidorViewModel extends ChangeNotifier {
     required this.device,
   }) : _realTimeRepo = realTimeRepo;
 
+  final TextEditingController heightController = TextEditingController();
+  final TextEditingController levelHighController = TextEditingController();
+  final TextEditingController levelLowController = TextEditingController();
+
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
@@ -26,19 +30,19 @@ class MedidorViewModel extends ChangeNotifier {
   bool _stateSensor = false;
   bool get stateSensor => _stateSensor;
 
-  double _height = 0;
-  double get height => _height;
+  int _height = 0;
+  int get height => _height;
 
-  double _levelHigh = 0;
-  double get levelHigh => _levelHigh;
+  int _levelHigh = 0;
+  int get levelHigh => _levelHigh;
 
-  double _levelLow = 0;
-  double get levelLow => _levelLow;
+  int _levelLow = 0;
+  int get levelLow => _levelLow;
 
   bool _alert = false;
   bool get alert => _alert;
 
-  Future<void> initialize(String deviceId) async {
+  Future<void> init(String deviceId, String deviceType) async {
     _isLoading = true;
     _errorMessage = null;
 
@@ -47,6 +51,7 @@ class MedidorViewModel extends ChangeNotifier {
     try {
       await _realTimeRepo.onDevice(
         deviceId,
+        deviceType.toLowerCase(),
         handleInitialData,
         handleMeasurement,
       );
@@ -62,26 +67,27 @@ class MedidorViewModel extends ChangeNotifier {
     try {
       final json = Map<String, dynamic>.from(data);
 
-      final measurement = Map<String, dynamic>.from(json['measurement']);
+      final values = Map<String, dynamic>.from(json['values']);
+      final realtime = Map<String, dynamic>.from(values['realtime']);
+      final parameters = Map<String, dynamic>.from(values['parameters']);
 
-      final configuration = Map<String, dynamic>.from(json['configuration']);
+      _percent = (realtime['percent'] as num).toInt();
+      _stateSensor = realtime['state'] as bool;
 
-      _percent = (measurement['percent'] as num).toInt();
+      _height = (parameters['height'] as num).toInt();
+      _levelHigh = (parameters['levelHigh'] as num).toInt();
+      _levelLow = (parameters['levelLow'] as num).toInt();
+      _alert = parameters['alert'] as bool;
 
-      _stateSensor = measurement['state'] as bool;
+      heightController.text = _height.toString();
+      levelHighController.text = _levelHigh.toString();
+      levelLowController.text = _levelLow.toString();
 
-      _height = (configuration['height'] as num).toDouble();
-
-      _levelHigh = (configuration['levelHigh'] as num).toDouble();
-
-      _levelLow = (configuration['levelLow'] as num).toDouble();
-
-      _alert = configuration['alert'] as bool;
+      _errorMessage = null;
 
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Datos iniciales del medidor inválidos';
-
       notifyListeners();
     }
   }
@@ -91,21 +97,24 @@ class MedidorViewModel extends ChangeNotifier {
       final json = Map<String, dynamic>.from(data);
 
       _percent = (json['percent'] as num).toInt();
-
       _stateSensor = json['state'] as bool;
 
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Datos de medición inválidos';
-
       notifyListeners();
     }
   }
 
+  void setAlert(bool value) {
+    _alert = value;
+    notifyListeners();
+  }
+
   void setConfiguration({
-    required double height,
-    required double levelHigh,
-    required double levelLow,
+    required int height,
+    required int levelHigh,
+    required int levelLow,
     required bool alert,
   }) {
     _height = height;
@@ -113,14 +122,19 @@ class MedidorViewModel extends ChangeNotifier {
     _levelLow = levelLow;
     _alert = alert;
 
+    heightController.text = height.toString();
+    levelHighController.text = levelHigh.toString();
+    levelLowController.text = levelLow.toString();
+
     notifyListeners();
   }
 
   Future<void> updateConfiguration({
     required String deviceId,
-    required double height,
-    required double levelHigh,
-    required double levelLow,
+    required String type,
+    required int height,
+    required int levelHigh,
+    required int levelLow,
     required bool alert,
   }) async {
     _isSaving = true;
@@ -129,38 +143,22 @@ class MedidorViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _realTimeRepo.updateMedidor(
-        deviceId: deviceId,
-        height: height,
-        levelHigh: levelHigh,
-        levelLow: levelLow,
-        alert: alert,
-        handler: handleConfigurationUpdated,
+      await _realTimeRepo.updateParameters(
+        type: type,
+        data: {
+          'deviceId': deviceId,
+          'payload': {
+            'alert': alert,
+            'height': height,
+            'levelHigh': levelHigh,
+            'levelLow': levelLow,
+          },
+        },
       );
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
       _isSaving = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> handleConfigurationUpdated(dynamic data) async {
-    try {
-      final json = Map<String, dynamic>.from(data);
-
-      _height = (json['height'] as num).toDouble();
-
-      _levelHigh = (json['levelHigh'] as num).toDouble();
-
-      _levelLow = (json['levelLow'] as num).toDouble();
-
-      _alert = json['alert'] as bool;
-
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = 'Configuración recibida inválida';
-
       notifyListeners();
     }
   }
@@ -172,7 +170,12 @@ class MedidorViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    heightController.dispose();
+    levelHighController.dispose();
+    levelLowController.dispose();
+
     _realTimeRepo.dispose();
+
     super.dispose();
   }
 }

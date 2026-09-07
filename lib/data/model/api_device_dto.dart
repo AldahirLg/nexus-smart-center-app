@@ -17,7 +17,7 @@ class ApiDeviceDto {
 
   DeviceType _parseDeviceType(String type) {
     switch (type) {
-      case 'Medidor ':
+      case 'Medidor':
         return DeviceType.medidor;
       case 'LevelController':
         return DeviceType.controlDeNivel;

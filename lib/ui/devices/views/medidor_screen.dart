@@ -70,48 +70,71 @@ class _MedidorHomePage extends StatelessWidget {
             'Nivel actual',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
-
-          const SizedBox(height: 20),
-
           Center(
-            child: SizedBox(
-              height: 120,
-              width: 120,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: percent / 100,
-                    strokeWidth: 10,
-                  ),
-
-                  Text(
-                    '$percent%',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: context.colors.surface,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 3),
+                    color: context.colors.secondary,
                   ),
                 ],
+              ),
+              height: 150,
+              width: 150,
+              padding: const EdgeInsets.all(24),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: context.colors.secondary,
+                    ),
+                    FractionallySizedBox(
+                      widthFactor: 1,
+                      heightFactor: .8,
+                      alignment: Alignment.bottomCenter,
+                      child: Container(color: context.colors.primary),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
 
           const SizedBox(height: 25),
 
-          Card(
-            color: context.colors.surface,
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: context.colors.surface,
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 3),
+                  color: context.colors.secondary,
+                ),
+              ],
+            ),
             child: Padding(
               padding: const EdgeInsets.all(18),
               child: Column(
                 children: [
                   _InfoRow(
-                    icon: Icons.water_drop_outlined,
+                    icon: Icons.water,
                     title: 'Nivel',
                     value: '$percent %',
                   ),
 
-                  const Divider(height: 24),
+                  Divider(height: 24, color: context.colors.secondary),
 
                   _InfoRow(
                     icon: Icons.height,
@@ -125,20 +148,31 @@ class _MedidorHomePage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          Card(
-            color: context.colors.surface,
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: context.colors.surface,
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 3),
+                  color: context.colors.secondary,
+                ),
+              ],
+            ),
             child: ListTile(
               leading: Icon(
                 viewModel.stateSensor
                     ? Icons.warning_rounded
                     : Icons.check_circle,
-                color: viewModel.stateSensor ? Colors.orange : Colors.green,
+                color: viewModel.stateSensor
+                    ? context.colors.error
+                    : context.colors.primary,
               ),
               title: Text(
-                viewModel.stateSensor
-                    ? 'Estado del sensor: alerta'
-                    : 'Estado normal',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                'Estado de sensor :',
+                style: context.textTheme.titleSmall,
               ),
               subtitle: Text(
                 viewModel.stateSensor
@@ -168,16 +202,13 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 26, color: context.colors.secondary),
+        Icon(icon, size: 26, color: context.colors.primary),
 
         const SizedBox(width: 16),
 
-        Expanded(child: Text(title, style: const TextStyle(fontSize: 15))),
+        Expanded(child: Text(title, style: context.textTheme.bodyMedium)),
 
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+        Text(value, style: context.textTheme.bodyMedium),
       ],
     );
   }
@@ -325,11 +356,23 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
           TextFormField(
             controller: _heightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
+              labelStyle: context.textTheme.bodyMedium,
               labelText: 'Altura del contenedor',
               suffixText: 'cm',
-              prefixIcon: Icon(Icons.height),
-              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.height, color: context.colors.primary),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.colors.secondary),
+              ),
+
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: context.colors.secondary,
+                  width: 2,
+                ),
+              ),
             ),
           ),
 
@@ -337,12 +380,28 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
 
           TextFormField(
             controller: _levelHighController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelStyle: context.textTheme.bodyMedium,
               labelText: 'Nivel alto',
               suffixText: 'cm',
-              prefixIcon: Icon(Icons.arrow_upward),
-              border: OutlineInputBorder(),
+              prefixIcon: Icon(
+                Icons.notifications,
+                color: context.colors.primary,
+              ),
+
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.colors.secondary),
+              ),
+
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: context.colors.secondary,
+                  width: 2,
+                ),
+              ),
             ),
           ),
 
@@ -351,33 +410,66 @@ class _MedidorSettingsPageState extends State<_MedidorSettingsPage> {
           TextFormField(
             controller: _levelLowController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
+              labelStyle: context.textTheme.bodyLarge,
               labelText: 'Nivel bajo',
               suffixText: 'cm',
-              prefixIcon: Icon(Icons.arrow_downward),
-              border: OutlineInputBorder(),
+              prefixIcon: Icon(
+                Icons.notifications,
+                color: context.colors.primary,
+              ),
+
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.colors.secondary),
+              ),
+
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: context.colors.secondary,
+                  width: 2,
+                ),
+              ),
             ),
           ),
 
           const SizedBox(height: 30),
+          SizedBox(
+            height: 50,
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.colors.primary,
+              ),
 
-          FilledButton.icon(
-            onPressed: viewModel.isSaving ? null : _saveConfiguration,
-            icon: viewModel.isSaving
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.save),
-            label: Text(
-              viewModel.isSaving ? 'Guardando...' : 'Guardar configuración',
+              onPressed: viewModel.isSaving ? null : _saveConfiguration,
+
+              child: viewModel.isSaving
+                  ? CircularProgressIndicator()
+                  : Text(
+                      'Guardar Informacion',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.colors.surface,
+                      ),
+                    ),
             ),
           ),
-
           const SizedBox(height: 30),
 
-          Card(
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: context.colors.surface,
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 3),
+                  color: context.colors.secondary,
+                ),
+              ],
+            ),
             child: SwitchListTile(
               value: _alert,
               onChanged: viewModel.isSaving

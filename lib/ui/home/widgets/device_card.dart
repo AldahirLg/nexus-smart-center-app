@@ -19,14 +19,14 @@ class DeviceCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: context.colors.secondary,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFDCEBFA)),
             boxShadow: [
               BoxShadow(
-                color: context.colors.primary.withValues(alpha: .08),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: context.colors.secondary,
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+                spreadRadius: 1,
               ),
             ],
           ),
@@ -36,41 +36,58 @@ class DeviceCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Text(
+                    device.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  ),
                   Container(
                     height: 48,
                     width: 48,
                     decoration: BoxDecoration(
-                      color: context.colors.surface,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      DeviceIconMapper.getIcon(device.type),
                       color: context.colors.secondary,
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    child: Icon(Icons.edit),
                   ),
                 ],
               ),
-              Spacer(),
-              Text(
-                device.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: context.colors.surface,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                device.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: context.colors.surface,
-                ),
+
+              const SizedBox(height: 4),
+              Divider(height: 2, color: context.colors.secondary),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 80,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: context.colors.secondary,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: DeviceIconMapper.getImage(device.type) != null
+                        ? Image.asset(
+                            DeviceIconMapper.getImage(device.type)!,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.contain,
+                          )
+                        : Icon(DeviceIconMapper.getIcon(device.type)),
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    DeviceIconMapper.getTypeString(device.type),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w300,
+                      fontSize: 15,
+                      color: context.colors.primary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

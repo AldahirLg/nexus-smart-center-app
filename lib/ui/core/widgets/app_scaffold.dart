@@ -43,8 +43,8 @@ class AppScaffold extends StatelessWidget {
                   ),
                 ],
                 currentIndex: currentIndexNavigationBar!,
-                selectedItemColor: context.colors.secondary,
-                unselectedItemColor: context.colors.secondary,
+                selectedItemColor: context.colors.primary,
+
                 selectedLabelStyle: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -57,7 +57,12 @@ class AppScaffold extends StatelessWidget {
               ),
             ),
       appBar: showHeader
-          ? AppBar(title: Text(title!), centerTitle: true)
+          ? AppBar(
+              foregroundColor: Colors.black,
+              title: Text(title!, style: context.textTheme.titleMedium),
+              centerTitle: true,
+              backgroundColor: Colors.transparent,
+            )
           : null,
       body: SafeArea(
         bottom: false,
@@ -65,28 +70,11 @@ class AppScaffold extends StatelessWidget {
           children: [
             Positioned.fill(
               child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: context.colors.surfaceContainerLowest,
-                ),
+                decoration: BoxDecoration(color: context.colors.surface),
               ),
             ),
-            Positioned(
-              top: -120,
-              right: -80,
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Column(
-              children: [Expanded(child: Center(child: body))],
-            ),
+
+            Column(children: [Expanded(child: body)]),
           ],
         ),
       ),

@@ -11,88 +11,110 @@ class VerMasScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Accesos Rapidos',
-                style: context.textTheme.bodyLarge,
+    return Padding(
+      padding: EdgeInsetsGeometry.all(12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text('App y Cuenta', style: context.textTheme.titleMedium),
+            ],
+          ),
+          SizedBox(height: 12),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: context.colors.secondary, width: 1),
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 4),
-        Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.colors.surface,
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+              width: double.infinity,
+              height: 120,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CardAcceso(
-                    color: Colors.deepPurple,
-                    icon: Icons.person,
-                    title: 'Perfil',
-                    bodyText:
-                        'Administra las funciones disponibles de tu perfil',
-                    onTap: () {
-                      context.push(Routes.addDevice);
-                    },
+                  Container(
+                    height: 60,
+                    width: 60,
+                    decoration: BoxDecoration(
+                      shape: .circle,
+                      color: context.colors.primary.withValues(alpha: .5),
+                    ),
+                    child: Icon(
+                      Icons.person,
+                      size: 40,
+                      color: context.colors.primary,
+                    ),
                   ),
-                  Divider(
-                    color: context.colors.primary.withValues(alpha: .2),
-                    thickness: 2,
-                    height: 24,
+                  SizedBox(width: 12),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Aldahir Lopez',
+                        style: context.textTheme.titleMedium,
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'correo@example.com',
+                        style: context.textTheme.bodySmall,
+                      ),
+                    ],
                   ),
-                  CardAcceso(
-                    color: Colors.red,
-                    icon: Icons.link,
-                    title: 'Vicular Dispositivos',
-                    bodyText:
-                        'Realiza la vinculacion de los dispositivos a tu cuenta',
-                    onTap: () {
-                      context.push(Routes.scanDevices);
-                    },
-                  ),
-                  Divider(
-                    color: context.colors.primary.withValues(alpha: .2),
-                    thickness: 2,
-                    height: 24,
-                  ),
-                  CardAcceso(
-                    icon: Icons.info,
-                    title: 'Acerca de',
-                    bodyText:
-                        'Informacion acerca de tus dispositivos y la aplicacion',
-                    color: Colors.amber,
-                    onTap: () {},
-                  ),
-                  Divider(
-                    color: context.colors.primary.withValues(alpha: .2),
-                    thickness: 2,
-                    height: 24,
-                  ),
-                  CardAcceso(
-                    icon: Icons.phone,
-                    title: 'Ayuda y soporte',
-                    bodyText: 'Encuentra respuestas rapidas o contactanos',
-                    color: Colors.indigo,
-                    onTap: () {},
-                  ),
+                  SizedBox(width: 12),
+                  TextButton.icon(onPressed: () {}, label: Text('Editar')),
                 ],
               ),
             ),
           ),
-        ),
-      ],
+          SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              shape: .rectangle,
+              border: Border.all(color: context.colors.secondary, width: 1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: InkWell(
+              onTap: () {
+                context.push(Routes.scanWiFi);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        shape: .rectangle,
+                        borderRadius: BorderRadius.circular(20),
+                        color: context.colors.primary.withValues(alpha: .5),
+                      ),
+                      child: Icon(
+                        Icons.add,
+                        size: 20,
+                        color: context.colors.primary,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'Agregar dispositivo',
+                      style: context.textTheme.titleSmall,
+                    ),
+                    SizedBox(width: 12),
+                    Icon(Icons.arrow_right),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

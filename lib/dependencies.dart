@@ -5,11 +5,13 @@ import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
 import 'package:nexus_smart_center/data/repositories/ble_repository.dart';
 import 'package:nexus_smart_center/data/repositories/claim_repository.dart';
 import 'package:nexus_smart_center/data/repositories/real_time_repository.dart';
+import 'package:nexus_smart_center/data/repositories/wifi_repository.dart';
 import 'package:nexus_smart_center/data/service/api_client.dart';
 import 'package:nexus_smart_center/data/service/api_service.dart';
 import 'package:nexus_smart_center/data/service/auth_service.dart';
 import 'package:nexus_smart_center/data/service/ble_service.dart';
 import 'package:nexus_smart_center/data/service/socket_client.dart';
+import 'package:nexus_smart_center/data/service/wifi_scan_service.dart';
 import 'package:nexus_smart_center/domain/session_manager.dart';
 import 'package:provider/provider.dart';
 
@@ -23,8 +25,9 @@ class Dependencies extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Servicios Base & HTTP Clients
+        Provider<WifiScanService>(create: (_) => WifiScanService()),
         Provider(
-          create: (_) => SocketClient(serverUrl: 'http://172.30.192.1:5000'),
+          create: (_) => SocketClient(serverUrl: 'http://192.168.100.12:5000'),
         ),
         Provider<BLEservice>(create: (_) => BLEservice()),
         Provider<Dio>(create: (_) => ApiClient.instance.dio),
@@ -34,6 +37,7 @@ class Dependencies extends StatelessWidget {
         ),
 
         //  Repositorios
+        Provider(create: (context) => WifiRepository(wifi: context.read())),
         Provider(
           create: (context) => ApiRepository(
             apiService: context.read(),

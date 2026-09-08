@@ -33,13 +33,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     super.dispose();
   }
 
-  // Se llama cuando esta pantalla se muestra por primera vez
   @override
   void didPush() {
     widget.viewModel.initialize();
   }
 
-  // Se llama cuando regresas a esta pantalla (ej. pop desde /medidor)
   @override
   void didPopNext() {
     widget.viewModel.initialize();
@@ -50,10 +48,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return Column(
       children: [
         Expanded(
+          flex: 2,
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -98,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ),
         ),
         Expanded(
-          flex: 6,
+          flex: 8,
           child: ListenableBuilder(
             listenable: widget.viewModel,
             builder: (context, state) {

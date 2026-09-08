@@ -19,8 +19,6 @@ class _MedidorScreenState extends State<MedidorScreen> {
   @override
   void initState() {
     super.initState();
-
-    //widget.viewModel.initialize(widget.viewModel.device.id);
   }
 
   void _onNavigationTap(int index) {
@@ -36,10 +34,7 @@ class _MedidorScreenState extends State<MedidorScreen> {
       builder: (context, child) {
         return AppScaffold(
           showHeader: true,
-          showNavigationBar: true,
           title: _currentIndex == 0 ? 'Medidor de nivel' : 'Configuración',
-          currentIndexNavigationBar: _currentIndex,
-          onTapNavigationBar: _onNavigationTap,
           body: IndexedStack(
             index: _currentIndex,
             children: [

@@ -14,7 +14,6 @@ class BleScanScreen extends StatelessWidget {
     return AppScaffold(
       title: "Escanear",
       showHeader: true,
-      showNavigationBar: false,
       body: ListenableBuilder(
         listenable: viewmodel,
         builder: (context, _) {

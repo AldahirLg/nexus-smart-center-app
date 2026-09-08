@@ -10,6 +10,7 @@ enum SessionStatus {
   initializing,
   unauthenticated,
   unverifiedEmail,
+  syncFailed,
   authenticated,
 }
 
@@ -36,10 +37,8 @@ class SessionManager extends ChangeNotifier {
   ApiUserModel? _apiUser;
   ApiUserModel? get apiUser => _apiUser;
 
-  bool get isInitialized => _status != SessionStatus.initializing;
   bool get isAuthenticated => _status == SessionStatus.authenticated;
   bool get emailVerified => _authUser?.isEmailVerified ?? false;
-
   void _init() {
     _authSubscription = _authRepository.authStateChanges().listen(
       _onAuthStateChanged,
@@ -67,10 +66,14 @@ class SessionManager extends ChangeNotifier {
       return;
     }
 
+    await syncServer();
+  }
+
+  Future<void> syncServer() async {
     try {
       final token = await _authRepository.getIdToken();
       if (token != null) {
-        debugPrint('🚀 SessionManager: Sincronizando con Backend...');
+        debugPrint('SessionManager: Sincronizando con Backend...');
 
         _apiUser = await _apiRepository.synchronizeUser(token);
         _status = SessionStatus.authenticated;
@@ -83,9 +86,9 @@ class SessionManager extends ChangeNotifier {
     } catch (e, stackTrace) {
       debugPrint('SessionManager Error en Sync/Parseo: $e');
       debugPrint(stackTrace.toString());
-      _status = SessionStatus.unauthenticated;
+      _apiUser = null;
+      _status = SessionStatus.syncFailed;
     }
-
     notifyListeners();
   }
 

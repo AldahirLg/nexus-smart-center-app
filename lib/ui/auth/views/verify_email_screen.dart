@@ -13,7 +13,6 @@ class VerifyEmailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      showNavigationBar: false,
       body: Column(
         children: [
           Expanded(

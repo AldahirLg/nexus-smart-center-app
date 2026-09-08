@@ -11,15 +11,19 @@ import 'package:nexus_smart_center/ui/auth/views/verify_email_screen.dart';
 import 'package:nexus_smart_center/ui/auth/views/welcome_screen.dart';
 import 'package:nexus_smart_center/ui/claim/view_models/ble_scan_view_model.dart';
 import 'package:nexus_smart_center/ui/claim/view_models/claim_screen_view_model.dart';
+import 'package:nexus_smart_center/ui/claim/view_models/scan_wifi_view_model.dart';
 import 'package:nexus_smart_center/ui/claim/views/ble_scan_screen.dart';
 import 'package:nexus_smart_center/ui/claim/views/claim_screen.dart';
+import 'package:nexus_smart_center/ui/claim/views/scan_wifi_screen.dart';
 import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
-import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/medidor_view_model.dart';
 import 'package:nexus_smart_center/ui/devices/views/medidor_screen.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
+import 'package:nexus_smart_center/ui/home/view_models/sync_failed_view_model.dart';
 import 'package:nexus_smart_center/ui/home/views/home_screen.dart';
+import 'package:nexus_smart_center/ui/home/views/main_navigation.dart';
+import 'package:nexus_smart_center/ui/home/views/sync_faile_screen.dart';
 import 'package:nexus_smart_center/ui/home/views/ver_mas_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -35,6 +39,8 @@ abstract final class Routes {
   static const String scanDevices = '/scan';
   static const String claimDevice = '/claim_device';
   static const String medidor = '/medidor';
+  static const String syncFailed = '/sync_failed';
+  static const String scanWiFi = '/scan_wifi';
   static const shellRoutes = [home, verMas];
   static const publicRoutes = [welcom, signup, login];
 }
@@ -47,63 +53,67 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
     // mejorarar este navegacion de pantallas
 
     // 1. Aún inicializando/sincronizando -> Mantener en Splash
-    if (!sessionManager.isInitialized) {
+    if (sessionManager.status == SessionStatus.initializing) {
       return Routes.splash;
     }
 
     // 2. Si NO está autenticado -> Mandar a Welcome/Login
-    if (!sessionManager.isAuthenticated) {
+    if (sessionManager.status == SessionStatus.unauthenticated) {
       final isPublic = Routes.publicRoutes.contains(state.matchedLocation);
       return isPublic ? null : Routes.welcom;
     }
 
     // 3. Email no verificado -> Mandar a Verify Email
-    if (!sessionManager.emailVerified) {
+    if (sessionManager.status == SessionStatus.unverifiedEmail) {
       return state.matchedLocation == Routes.verifyEmail
           ? null
           : Routes.verifyEmail;
+    }
+
+    if (sessionManager.status == SessionStatus.syncFailed) {
+      return Routes.syncFailed;
     }
 
     // 4. Si YA está autenticado y la ruta actual es Splash, Login/Welcome o VerifyEmail -> Ir a Home
     final isAtSplash = state.matchedLocation == Routes.splash;
     final isAtPublicRoute = Routes.publicRoutes.contains(state.matchedLocation);
     final isAtVerifyEmail = state.matchedLocation == Routes.verifyEmail;
+    final isAtSyncFailed = state.matchedLocation == Routes.syncFailed;
 
-    if (isAtSplash || isAtPublicRoute || isAtVerifyEmail) {
+    if (isAtSplash || isAtPublicRoute || isAtVerifyEmail || isAtSyncFailed) {
       return Routes.home;
     }
-
     return null;
   },
   routes: [
-    ShellRoute(
-      builder: (context, state, child) {
-        final currentIndex = Routes.shellRoutes.indexOf(state.matchedLocation);
-        return AppScaffold(
-          body: child,
-          showHeader: false,
-          showNavigationBar: true,
-          currentIndexNavigationBar: currentIndex == -1 ? 0 : currentIndex,
-          onTapNavigationBar: (index) {
-            context.go(Routes.shellRoutes[index]);
-          },
-        );
-      },
-      routes: [
-        GoRoute(
-          path: Routes.home,
-          pageBuilder: (context, state) {
-            final viewModel = HomeViewModel(
-              authRepository: context.read(),
-              apiRepository: context.read(),
-            );
-            return NoTransitionPage(child: HomeScreen(viewModel: viewModel));
-          },
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          MainHomeNavigationScreen(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.home,
+              pageBuilder: (context, state) {
+                final viewModel = HomeViewModel(
+                  authRepository: context.read(),
+                  apiRepository: context.read(),
+                );
+                return NoTransitionPage(
+                  child: HomeScreen(viewModel: viewModel),
+                );
+              },
+            ),
+          ],
         ),
-        GoRoute(
-          path: Routes.verMas,
-          pageBuilder: (context, state) =>
-              NoTransitionPage(child: VerMasScreen()),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.verMas,
+              pageBuilder: (context, state) =>
+                  NoTransitionPage(child: VerMasScreen()),
+            ),
+          ],
         ),
       ],
     ),
@@ -166,6 +176,17 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
         viewmodel.init(device.id, DeviceIconMapper.getTypeString(device.type));
         return MedidorScreen(viewModel: viewmodel);
       }),
+    ),
+    GoRoute(
+      path: Routes.syncFailed,
+      builder: (context, state) => SyncFaileScreen(
+        viewModel: SyncFailedViewModel(sesion: sessionManager),
+      ),
+    ),
+    GoRoute(
+      path: Routes.scanWiFi,
+      builder: (context, state) =>
+          ScanWifiScreen(viewModel: ScanWifiViewModel(repo: context.read())),
     ),
   ],
 );

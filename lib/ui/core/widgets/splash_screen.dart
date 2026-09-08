@@ -6,10 +6,6 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      body: Column(),
-      showHeader: false,
-      showNavigationBar: false,
-    );
+    return AppScaffold(body: Column(), showHeader: false);
   }
 }

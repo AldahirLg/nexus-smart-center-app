@@ -52,7 +52,6 @@ class ClaimDeviceScreen extends StatelessWidget {
       ),
       showHeader: true,
       title: 'Vincular Dispositivo',
-      showNavigationBar: false,
     );
   }
 }

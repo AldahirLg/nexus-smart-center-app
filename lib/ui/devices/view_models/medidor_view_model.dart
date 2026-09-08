@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nexus_smart_center/data/model/medidor_dto.dart';
 import 'package:nexus_smart_center/data/repositories/real_time_repository.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
+import 'package:nexus_smart_center/models/medidor_model.dart';
+import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 
 class MedidorViewModel extends ChangeNotifier {
   final DeviceModel device;
@@ -24,28 +27,12 @@ class MedidorViewModel extends ChangeNotifier {
   bool _isSaving = false;
   bool get isSaving => _isSaving;
 
-  int _percent = 0;
-  int get percent => _percent;
-
-  bool _stateSensor = false;
-  bool get stateSensor => _stateSensor;
-
-  int _height = 0;
-  int get height => _height;
-
-  int _levelHigh = 0;
-  int get levelHigh => _levelHigh;
-
-  int _levelLow = 0;
-  int get levelLow => _levelLow;
-
-  bool _alert = false;
-  bool get alert => _alert;
+  MedidorModel? _medidor;
+  MedidorModel? get medidor => _medidor;
 
   Future<void> init(String deviceId, String deviceType) async {
     _isLoading = true;
     _errorMessage = null;
-
     notifyListeners();
 
     try {
@@ -66,25 +53,14 @@ class MedidorViewModel extends ChangeNotifier {
   Future<void> handleInitialData(dynamic data) async {
     try {
       final json = Map<String, dynamic>.from(data);
+      final dto = MedidorInitialDto.fromJson(json);
+      _medidor = dto.toModel(battery: _medidor?.battery ?? 0);
 
-      final values = Map<String, dynamic>.from(json['values']);
-      final realtime = Map<String, dynamic>.from(values['realtime']);
-      final parameters = Map<String, dynamic>.from(values['parameters']);
-
-      _percent = (realtime['percent'] as num).toInt();
-      _stateSensor = realtime['state'] as bool;
-
-      _height = (parameters['height'] as num).toInt();
-      _levelHigh = (parameters['levelHigh'] as num).toInt();
-      _levelLow = (parameters['levelLow'] as num).toInt();
-      _alert = parameters['alert'] as bool;
-
-      heightController.text = _height.toString();
-      levelHighController.text = _levelHigh.toString();
-      levelLowController.text = _levelLow.toString();
+      heightController.text = _medidor!.parameters.height.toString();
+      levelHighController.text = _medidor!.parameters.levelHigh.toString();
+      levelLowController.text = _medidor!.parameters.levelLow.toString();
 
       _errorMessage = null;
-
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Datos iniciales del medidor inválidos';
@@ -95,9 +71,15 @@ class MedidorViewModel extends ChangeNotifier {
   Future<void> handleMeasurement(dynamic data) async {
     try {
       final json = Map<String, dynamic>.from(data);
+      final dto = MedidorMeasurementDto.fromJson(json);
 
-      _percent = (json['percent'] as num).toInt();
-      _stateSensor = json['state'] as bool;
+      if (_medidor != null) {
+        _medidor = _medidor!.copyWith(
+          percent: dto.percent,
+          battery: dto.battery,
+          sensorState: dto.sensorState,
+        );
+      }
 
       notifyListeners();
     } catch (e) {
@@ -107,7 +89,10 @@ class MedidorViewModel extends ChangeNotifier {
   }
 
   void setAlert(bool value) {
-    _alert = value;
+    if (_medidor == null) return;
+    _medidor = _medidor!.copyWith(
+      parameters: _medidor!.parameters.copyWith(alert: value),
+    );
     notifyListeners();
   }
 
@@ -117,10 +102,27 @@ class MedidorViewModel extends ChangeNotifier {
     required int levelLow,
     required bool alert,
   }) {
-    _height = height;
-    _levelHigh = levelHigh;
-    _levelLow = levelLow;
-    _alert = alert;
+    _medidor =
+        (_medidor ??
+                MedidorModel(
+                  percent: 0,
+                  battery: 0,
+                  sensorState: false,
+                  parameters: const ParametersMedidor(
+                    alert: false,
+                    height: 0,
+                    levelHigh: 0,
+                    levelLow: 0,
+                  ),
+                ))
+            .copyWith(
+              parameters: ParametersMedidor(
+                alert: alert,
+                height: height,
+                levelHigh: levelHigh,
+                levelLow: levelLow,
+              ),
+            );
 
     heightController.text = height.toString();
     levelHighController.text = levelHigh.toString();
@@ -139,7 +141,6 @@ class MedidorViewModel extends ChangeNotifier {
   }) async {
     _isSaving = true;
     _errorMessage = null;
-
     notifyListeners();
 
     try {
@@ -173,9 +174,7 @@ class MedidorViewModel extends ChangeNotifier {
     heightController.dispose();
     levelHighController.dispose();
     levelLowController.dispose();
-
-    _realTimeRepo.dispose();
-
+    _realTimeRepo.dispose(DeviceIconMapper.getTypeString(device.type));
     super.dispose();
   }
 }

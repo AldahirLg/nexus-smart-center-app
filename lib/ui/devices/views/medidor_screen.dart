@@ -19,6 +19,16 @@ class _MedidorScreenState extends State<MedidorScreen> {
   @override
   void initState() {
     super.initState();
+    widget.viewModel.init(
+      widget.viewModel.device.id,
+      DeviceIconMapper.getTypeString(widget.viewModel.device.type),
+    );
+  }
+
+  @override
+  void dispose() {
+    widget.viewModel.dispose();
+    super.dispose();
   }
 
   void _onNavigationTap(int index) {
@@ -29,21 +39,39 @@ class _MedidorScreenState extends State<MedidorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.viewModel,
-      builder: (context, child) {
-        return AppScaffold(
-          showHeader: true,
-          title: _currentIndex == 0 ? 'Medidor de nivel' : 'Configuración',
-          body: IndexedStack(
-            index: _currentIndex,
-            children: [
-              _MedidorHomePage(viewModel: widget.viewModel),
-              _MedidorSettingsPage(viewModel: widget.viewModel),
-            ],
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _MedidorHomePage(viewModel: widget.viewModel),
+          _MedidorSettingsPage(viewModel: widget.viewModel),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined, size: 20),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
           ),
-        );
-      },
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings_outlined, size: 20),
+            activeIcon: Icon(Icons.settings),
+            label: 'Ver más',
+          ),
+        ],
+        currentIndex: _currentIndex,
+        selectedItemColor: context.colors.primary,
+        selectedLabelStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+        ),
+        onTap: _onNavigationTap,
+      ),
     );
   }
 }
@@ -55,130 +83,150 @@ class _MedidorHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final percent = viewModel.percent;
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, child) {
+        final medidor = viewModel.medidor;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            'Nivel actual',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          Center(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: context.colors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 3),
-                    color: context.colors.secondary,
-                  ),
-                ],
-              ),
-              height: 150,
-              width: 150,
-              padding: const EdgeInsets.all(24),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      color: context.colors.secondary,
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: 1,
-                      heightFactor: percent / 100,
-                      alignment: Alignment.bottomCenter,
-                      child: Container(color: context.colors.primary),
-                    ),
-                  ],
+        if (viewModel.isLoading || medidor == null) {
+          return const AppScaffold(
+            showHeader: true,
+            title: 'Medidor de nivel',
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final percent = medidor.percent;
+
+        return AppScaffold(
+          showHeader: true,
+          title: 'Medidor de nivel',
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Nivel actual',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-              ),
-            ),
-          ),
 
-          const SizedBox(height: 25),
+                const SizedBox(height: 16),
 
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: context.colors.surface,
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 3),
-                  color: context.colors.secondary,
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: context.colors.surface,
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 3),
+                          color: context.colors.secondary,
+                        ),
+                      ],
+                    ),
+                    height: 150,
+                    width: 150,
+                    padding: const EdgeInsets.all(24),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: context.colors.secondary,
+                          ),
+                          FractionallySizedBox(
+                            widthFactor: 1,
+                            heightFactor: percent / 100,
+                            alignment: Alignment.bottomCenter,
+                            child: Container(color: context.colors.primary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: context.colors.surface,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 3),
+                        color: context.colors.secondary,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      children: [
+                        _InfoRow(
+                          icon: Icons.water,
+                          title: 'Nivel',
+                          value: '$percent %',
+                        ),
+                        Divider(height: 24, color: context.colors.secondary),
+                        _InfoRow(
+                          icon: Icons.height,
+                          title: 'Altura',
+                          value: '${medidor.parameters.height} cm',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: context.colors.surface,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 3),
+                        color: context.colors.secondary,
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      medidor.sensorState
+                          ? Icons.check_circle
+                          : Icons.warning_rounded,
+                      color: medidor.sensorState
+                          ? context.colors.primary
+                          : context.colors.error,
+                    ),
+                    title: Text(
+                      'Estado de sensor :',
+                      style: context.textTheme.titleSmall,
+                    ),
+                    subtitle: Text(
+                      medidor.sensorState
+                          ? 'El sensor funciona correctamente.'
+                          : 'El sensor reporta fallas en la lectura.',
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                children: [
-                  _InfoRow(
-                    icon: Icons.water,
-                    title: 'Nivel',
-                    value: '$percent %',
-                  ),
-
-                  Divider(height: 24, color: context.colors.secondary),
-
-                  _InfoRow(
-                    icon: Icons.height,
-                    title: 'Altura',
-                    value: '${viewModel.height} cm',
-                  ),
-                ],
-              ),
-            ),
           ),
-
-          const SizedBox(height: 16),
-
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: context.colors.surface,
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 3),
-                  color: context.colors.secondary,
-                ),
-              ],
-            ),
-            child: ListTile(
-              leading: Icon(
-                viewModel.stateSensor
-                    ? Icons.check_circle
-                    : Icons.warning_rounded,
-                color: viewModel.stateSensor
-                    ? context.colors.primary
-                    : context.colors.error,
-              ),
-              title: Text(
-                'Estado de sensor :',
-                style: context.textTheme.titleSmall,
-              ),
-              subtitle: Text(
-                viewModel.stateSensor
-                    ? 'El sensor funciona correctamente.'
-                    : 'El sensor reporta fallas en la lectura.',
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -199,11 +247,8 @@ class _InfoRow extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 26, color: context.colors.primary),
-
         const SizedBox(width: 16),
-
         Expanded(child: Text(title, style: context.textTheme.bodyMedium)),
-
         Text(value, style: context.textTheme.bodyMedium),
       ],
     );
@@ -254,13 +299,15 @@ class _MedidorSettingsPage extends StatelessWidget {
       return;
     }
 
+    final currentAlert = viewModel.medidor?.parameters.alert ?? false;
+
     await viewModel.updateConfiguration(
       deviceId: viewModel.device.id,
       type: DeviceIconMapper.getTypeString(viewModel.device.type).toLowerCase(),
       height: height,
       levelHigh: levelHigh,
       levelLow: levelLow,
-      alert: viewModel.alert,
+      alert: currentAlert,
     );
 
     if (!context.mounted) return;
@@ -279,106 +326,131 @@ class _MedidorSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            'Parámetros del contenedor',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Configura las dimensiones y niveles de alerta.',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          TextFormField(
-            controller: viewModel.heightController,
-            keyboardType: TextInputType.number,
-            decoration: _inputDecoration(
-              context,
-              label: 'Altura del contenedor',
-              suffix: 'cm',
-              icon: Icons.height,
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextFormField(
-            controller: viewModel.levelHighController,
-            keyboardType: TextInputType.number,
-            decoration: _inputDecoration(
-              context,
-              label: 'Nivel alto',
-              suffix: 'cm',
-              icon: Icons.notifications,
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextFormField(
-            controller: viewModel.levelLowController,
-            keyboardType: TextInputType.number,
-            decoration: _inputDecoration(
-              context,
-              label: 'Nivel bajo',
-              suffix: 'cm',
-              icon: Icons.notifications,
-            ),
-          ),
-          const SizedBox(height: 30),
-          SizedBox(
-            height: 50,
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.colors.primary,
-              ),
-              onPressed: viewModel.isSaving
-                  ? null
-                  : () => _saveConfiguration(context),
-              child: viewModel.isSaving
-                  ? const CircularProgressIndicator()
-                  : Text(
-                      'Guardar información',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.colors.surface,
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, child) {
+        final alert = viewModel.medidor?.parameters.alert ?? false;
+
+        return AppScaffold(
+          showHeader: true,
+          title: 'Configuración',
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Parámetros del contenedor',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Configura las dimensiones y niveles de alerta.',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                TextFormField(
+                  controller: viewModel.heightController,
+                  keyboardType: TextInputType.number,
+                  decoration: _inputDecoration(
+                    context,
+                    label: 'Altura del contenedor',
+                    suffix: 'cm',
+                    icon: Icons.height,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: viewModel.levelHighController,
+                  keyboardType: TextInputType.number,
+                  decoration: _inputDecoration(
+                    context,
+                    label: 'Nivel alto',
+                    suffix: 'cm',
+                    icon: Icons.notifications,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: viewModel.levelLowController,
+                  keyboardType: TextInputType.number,
+                  decoration: _inputDecoration(
+                    context,
+                    label: 'Nivel bajo',
+                    suffix: 'cm',
+                    icon: Icons.notifications,
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                SizedBox(
+                  height: 50,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.colors.primary,
+                    ),
+                    onPressed: viewModel.isSaving
+                        ? null
+                        : () => _saveConfiguration(context),
+                    child: viewModel.isSaving
+                        ? const CircularProgressIndicator()
+                        : Text(
+                            'Guardar información',
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              color: context.colors.surface,
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 3),
+                        color: context.colors.secondary,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Material(
+                      color: context.colors.surface,
+                      child: SwitchListTile(
+                        value: alert,
+                        onChanged: viewModel.isSaving
+                            ? null
+                            : viewModel.setAlert,
+                        title: const Text('Alertas de nivel'),
+                        subtitle: const Text(
+                          'Recibir una notificación en los niveles configurados',
+                        ),
                       ),
                     ),
-            ),
-          ),
-          const SizedBox(height: 30),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 3),
-                  color: context.colors.secondary,
+                  ),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Material(
-                color: context.colors.surface,
-                child: SwitchListTile(
-                  value: viewModel.alert,
-                  onChanged: viewModel.isSaving ? null : viewModel.setAlert,
-                  title: const Text('Alertas de nivel'),
-                  subtitle: const Text(
-                    'Recibir una notificación en los niveles configurados',
-                  ),
-                ),
-              ),
-            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

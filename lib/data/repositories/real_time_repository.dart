@@ -50,9 +50,9 @@ class RealTimeRepository {
     }
   }
 
-  Future<void> dispose() async {
-    _socket.off('medidor:init');
-    _socket.off('medidor');
-    _socket.off('medidor:updated');
+  Future<void> dispose(String device) async {
+    String deviceLoweCase = device.toLowerCase();
+    _socket.off(deviceLoweCase);
+    _socket.off('$deviceLoweCase:updated');
   }
 }

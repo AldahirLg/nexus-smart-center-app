@@ -27,7 +27,7 @@ class Dependencies extends StatelessWidget {
         // Servicios Base & HTTP Clients
         Provider<WifiScanService>(create: (_) => WifiScanService()),
         Provider(
-          create: (_) => SocketClient(serverUrl: 'http://192.168.100.12:5000'),
+          create: (_) => SocketClient(serverUrl: 'http://192.168.0.217:5000'),
         ),
         Provider<BLEservice>(create: (_) => BLEservice()),
         Provider<Dio>(create: (_) => ApiClient.instance.dio),

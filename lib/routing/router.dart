@@ -169,12 +169,12 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
       builder: ((context, state) {
         final DeviceModel device = state.extra as DeviceModel;
 
-        final viewmodel = MedidorViewModel(
-          realTimeRepo: context.read(),
-          device: device,
+        return MedidorScreen(
+          viewModel: MedidorViewModel(
+            realTimeRepo: context.read(),
+            device: device,
+          ),
         );
-        viewmodel.init(device.id, DeviceIconMapper.getTypeString(device.type));
-        return MedidorScreen(viewModel: viewmodel);
       }),
     ),
     GoRoute(

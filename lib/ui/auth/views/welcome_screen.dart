@@ -4,6 +4,7 @@ import 'package:nexus_smart_center/nexus_font/nexus_font_icons.dart';
 import 'package:nexus_smart_center/routing/router.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
+import 'package:nexus_smart_center/unen_font/unen_font_icons.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -26,7 +27,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(NexusFont.nexusLogo, color: context.colors.primary, size: 150),
+            Icon(UnenFont.unenicon, color: context.colors.primary, size: 150),
             SizedBox(height: 24),
             SizedBox(
               height: 60,

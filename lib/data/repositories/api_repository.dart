@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:nexus_smart_center/data/model/api_device_dto.dart';
 import 'package:nexus_smart_center/data/model/api_user_dto.dart';
 import 'package:nexus_smart_center/data/service/api_service.dart';

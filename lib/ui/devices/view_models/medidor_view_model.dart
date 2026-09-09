@@ -1,9 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/data/model/medidor_dto.dart';
 import 'package:nexus_smart_center/data/repositories/real_time_repository.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/models/medidor_model.dart';
-import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 
 class MedidorViewModel extends ChangeNotifier {
   final DeviceModel device;
@@ -54,7 +55,7 @@ class MedidorViewModel extends ChangeNotifier {
     try {
       final json = Map<String, dynamic>.from(data);
       final dto = MedidorInitialDto.fromJson(json);
-      _medidor = dto.toModel(battery: _medidor?.battery ?? 0);
+      _medidor = dto.toModel();
 
       heightController.text = _medidor!.parameters.height.toString();
       levelHighController.text = _medidor!.parameters.levelHigh.toString();
@@ -80,7 +81,7 @@ class MedidorViewModel extends ChangeNotifier {
           sensorState: dto.sensorState,
         );
       }
-
+      print(_medidor);
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Datos de medición inválidos';
@@ -174,7 +175,7 @@ class MedidorViewModel extends ChangeNotifier {
     heightController.dispose();
     levelHighController.dispose();
     levelLowController.dispose();
-    _realTimeRepo.dispose(DeviceIconMapper.getTypeString(device.type));
+    _realTimeRepo.dispose();
     super.dispose();
   }
 }

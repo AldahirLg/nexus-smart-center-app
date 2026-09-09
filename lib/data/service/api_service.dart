@@ -6,7 +6,7 @@ class ApiService {
   final Dio _dio;
   Future<Response> syncUser({required String idToken}) async {
     final response = await _dio.post(
-      '/user/auth/sync',
+      '/user/sync',
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
     return response;
@@ -27,5 +27,13 @@ class ApiService {
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
     return response;
+  }
+
+  Future<Response> registerFcmToken(String idToken, String fcmToken) async {
+    return _dio.post(
+      '/user/fcm-token',
+      data: {'token': fcmToken},
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+    );
   }
 }

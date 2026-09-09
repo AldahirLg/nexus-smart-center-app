@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:nexus_smart_center/data/repositories/api_repository.dart';
 import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
+import 'package:nexus_smart_center/data/repositories/fcm_repository.dart';
 import 'package:nexus_smart_center/models/api_user_model.dart';
 import 'package:nexus_smart_center/models/user_model.dart';
 
@@ -18,13 +19,18 @@ class SessionManager extends ChangeNotifier {
   SessionManager({
     required AuthRepository authRepository,
     required ApiRepository apiRepository,
+    required FcmRepository fcmRepository,
   }) : _authRepository = authRepository,
-       _apiRepository = apiRepository {
+       _apiRepository = apiRepository,
+       _fcmRepository = fcmRepository {
     _init();
   }
 
+  final FcmRepository _fcmRepository;
   final AuthRepository _authRepository;
   final ApiRepository _apiRepository;
+
+  StreamSubscription<String>? _fcmTokenSubscription;
 
   StreamSubscription<UserModel?>? _authSubscription;
 
@@ -76,6 +82,10 @@ class SessionManager extends ChangeNotifier {
         debugPrint('SessionManager: Sincronizando con Backend...');
 
         _apiUser = await _apiRepository.synchronizeUser(token);
+
+        await _registerFcmToken(token);
+        _listenToFcmToken(token);
+
         _status = SessionStatus.authenticated;
         debugPrint(
           'SessionManager: Sincronización exitosa. Estado: AUTHENTICATED',
@@ -92,9 +102,41 @@ class SessionManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _registerFcmToken(String token) async {
+    final fcmToken = await _fcmRepository.getToken();
+
+    if (fcmToken == null) {
+      debugPrint('SessionManager: No se obtuvo FCM Token');
+      return;
+    }
+
+    debugPrint('SessionManager: Registrando FCM Token...');
+
+    await _fcmRepository.registerToken(idToken: token, fcmToken: fcmToken);
+  }
+
+  void _listenToFcmToken(String idToken) {
+    _fcmTokenSubscription?.cancel();
+
+    _fcmTokenSubscription = _fcmRepository.tokenRefresh.listen((
+      newToken,
+    ) async {
+      try {
+        debugPrint('SessionManager: FCM Token actualizado');
+        await _fcmRepository.registerToken(
+          idToken: idToken,
+          fcmToken: newToken,
+        );
+      } catch (e) {
+        debugPrint('SessionManager: Error registrando nuevo FCM Token: $e');
+      }
+    });
+  }
+
   @override
   void dispose() {
     _authSubscription?.cancel();
+    _fcmTokenSubscription?.cancel();
     super.dispose();
   }
 }

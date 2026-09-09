@@ -19,8 +19,8 @@ class RealTimeRepository {
   ) async {
     await _ensureConnection();
 
-    _socket.on('$deviceType:updated', onInitialData);
-    _socket.on(deviceType, onMeasurement);
+    _socket.on('device:updated', onInitialData);
+    _socket.on('device', onMeasurement);
 
     try {
       _socket.emit('device', {'uid': deviceId, 'type': deviceType});
@@ -32,7 +32,7 @@ class RealTimeRepository {
   Future<void> updateParameters({required String type, dynamic data}) async {
     await _ensureConnection();
     try {
-      _socket.emit('$type:update', data);
+      _socket.emit('device:update', data);
     } catch (e) {
       throw Exception('No se pudo actualizar la configuración del $type');
     }
@@ -50,9 +50,8 @@ class RealTimeRepository {
     }
   }
 
-  Future<void> dispose(String device) async {
-    String deviceLoweCase = device.toLowerCase();
-    _socket.off(deviceLoweCase);
-    _socket.off('$deviceLoweCase:updated');
+  Future<void> dispose() async {
+    _socket.off('device');
+    _socket.off('device:updated');
   }
 }

@@ -25,7 +25,7 @@ class MedidorInitialDto {
 
     return MedidorInitialDto(
       percent: (realtime['percent'] as num).toInt(),
-      sensorState: realtime['sensor_state'] as bool,
+      sensorState: realtime['sensorState'] as bool,
       height: (parameters['height'] as num).toInt(),
       levelHigh: (parameters['levelHigh'] as num).toInt(),
       levelLow: (parameters['levelLow'] as num).toInt(),
@@ -64,7 +64,7 @@ class MedidorMeasurementDto {
     return MedidorMeasurementDto(
       percent: (json['percent'] as num).toInt(),
       battery: (json['battery'] as num?)?.toInt() ?? 0,
-      sensorState: (json['sensor_state'] ?? json['sensor']) as bool? ?? false,
+      sensorState: (json['sensorState']) as bool? ?? false,
     );
   }
 }

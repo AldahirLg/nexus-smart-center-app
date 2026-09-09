@@ -4,12 +4,14 @@ import 'package:nexus_smart_center/data/repositories/api_repository.dart';
 import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
 import 'package:nexus_smart_center/data/repositories/ble_repository.dart';
 import 'package:nexus_smart_center/data/repositories/claim_repository.dart';
+import 'package:nexus_smart_center/data/repositories/fcm_repository.dart';
 import 'package:nexus_smart_center/data/repositories/real_time_repository.dart';
 import 'package:nexus_smart_center/data/repositories/wifi_repository.dart';
 import 'package:nexus_smart_center/data/service/api_client.dart';
 import 'package:nexus_smart_center/data/service/api_service.dart';
 import 'package:nexus_smart_center/data/service/auth_service.dart';
 import 'package:nexus_smart_center/data/service/ble_service.dart';
+import 'package:nexus_smart_center/data/service/fcm_service.dart';
 import 'package:nexus_smart_center/data/service/socket_client.dart';
 import 'package:nexus_smart_center/data/service/wifi_scan_service.dart';
 import 'package:nexus_smart_center/domain/session_manager.dart';
@@ -24,7 +26,7 @@ class Dependencies extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Servicios Base & HTTP Clients
+        Provider<FcmService>(create: (_) => FcmService()),
         Provider<WifiScanService>(create: (_) => WifiScanService()),
         Provider(
           create: (_) => SocketClient(serverUrl: 'http://192.168.0.217:5000'),
@@ -37,6 +39,12 @@ class Dependencies extends StatelessWidget {
         ),
 
         //  Repositorios
+        Provider(
+          create: (context) => FcmRepository(
+            fcmService: context.read(),
+            apiService: context.read(),
+          ),
+        ),
         Provider(create: (context) => WifiRepository(wifi: context.read())),
         Provider(
           create: (context) => ApiRepository(
@@ -65,6 +73,7 @@ class Dependencies extends StatelessWidget {
           create: (context) => SessionManager(
             authRepository: context.read<AuthRepository>(),
             apiRepository: context.read<ApiRepository>(),
+            fcmRepository: context.read<FcmRepository>(),
           ),
         ),
       ],

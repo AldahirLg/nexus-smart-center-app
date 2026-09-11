@@ -29,7 +29,7 @@ class Dependencies extends StatelessWidget {
         Provider<FcmService>(create: (_) => FcmService()),
         Provider<WifiScanService>(create: (_) => WifiScanService()),
         Provider(
-          create: (_) => SocketClient(serverUrl: 'http://192.168.0.217:5000'),
+          create: (_) => SocketClient(serverUrl: 'http://192.168.1.175:5000'),
         ),
         Provider<BLEservice>(create: (_) => BLEservice()),
         Provider<Dio>(create: (_) => ApiClient.instance.dio),

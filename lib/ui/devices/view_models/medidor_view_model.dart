@@ -146,8 +146,8 @@ class MedidorViewModel extends ChangeNotifier {
 
     try {
       await _realTimeRepo.updateParameters(
-        type: type,
         data: {
+          'type': type,
           'deviceId': deviceId,
           'payload': {
             'alert': alert,

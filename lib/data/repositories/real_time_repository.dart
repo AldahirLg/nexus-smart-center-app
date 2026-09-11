@@ -29,12 +29,12 @@ class RealTimeRepository {
     }
   }
 
-  Future<void> updateParameters({required String type, dynamic data}) async {
+  Future<void> updateParameters({dynamic data}) async {
     await _ensureConnection();
     try {
       _socket.emit('device:update', data);
     } catch (e) {
-      throw Exception('No se pudo actualizar la configuración del $type');
+      throw Exception('No se pudo actualizar la configuración del dispostivo');
     }
   }
 

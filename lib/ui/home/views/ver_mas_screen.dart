@@ -80,7 +80,7 @@ class VerMasScreen extends StatelessWidget {
             ),
             child: InkWell(
               onTap: () {
-                context.push(Routes.scanWiFi);
+                context.push(Routes.scanDevices);
               },
               child: Padding(
                 padding: const EdgeInsets.all(15),

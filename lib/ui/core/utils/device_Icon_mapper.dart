@@ -40,4 +40,15 @@ class DeviceIconMapper {
         return null;
     }
   }
+
+  static String? getRoute(DeviceType type) {
+    switch (type) {
+      case DeviceType.medidor:
+        return '/medidor';
+      case DeviceType.controlDeNivel:
+        return '/control_de_nivel';
+      case DeviceType.unknown:
+        return null;
+    }
+  }
 }

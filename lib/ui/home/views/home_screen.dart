@@ -5,6 +5,7 @@ import 'package:nexus_smart_center/nexus_font/nexus_font_icons.dart';
 import 'package:nexus_smart_center/routing/router.dart';
 import 'package:nexus_smart_center/ui/core/route_observer.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
+import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 import 'package:nexus_smart_center/ui/home/widgets/device_card.dart';
 import 'package:nexus_smart_center/unen_font/unen_font_icons.dart';
@@ -117,7 +118,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       device: device,
                       onTap: () {
                         context.push(
-                          Routes.medidor,
+                          Routes.devicesRoutes.firstWhere(
+                            (route) =>
+                                route == DeviceIconMapper.getRoute(device.type),
+                            orElse: () => '/',
+                          ),
                           extra: DeviceModel(
                             id: device.id,
                             name: device.name,

@@ -15,9 +15,10 @@ import 'package:nexus_smart_center/ui/claim/view_models/scan_wifi_view_model.dar
 import 'package:nexus_smart_center/ui/claim/views/ble_scan_screen.dart';
 import 'package:nexus_smart_center/ui/claim/views/claim_screen.dart';
 import 'package:nexus_smart_center/ui/claim/views/scan_wifi_screen.dart';
-import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
+import 'package:nexus_smart_center/ui/devices/view_models/control_de_nivel_model_view.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/medidor_view_model.dart';
+import 'package:nexus_smart_center/ui/devices/views/control_de_nivel_screen.dart';
 import 'package:nexus_smart_center/ui/devices/views/medidor_screen.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 import 'package:nexus_smart_center/ui/home/view_models/sync_failed_view_model.dart';
@@ -41,8 +42,10 @@ abstract final class Routes {
   static const String medidor = '/medidor';
   static const String syncFailed = '/sync_failed';
   static const String scanWiFi = '/scan_wifi';
+  static const String controlDeNivel = '/control_de_nivel';
   static const shellRoutes = [home, verMas];
   static const publicRoutes = [welcom, signup, login];
+  static const devicesRoutes = [medidor, controlDeNivel];
 }
 
 GoRouter router(SessionManager sessionManager) => GoRouter(
@@ -52,12 +55,12 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
   redirect: (context, state) {
     // mejorarar este navegacion de pantallas
 
-    // 1. Aún inicializando/sincronizando -> Mantener en Splash
+    // 1. AUn inicializando/sincronizando -> Mantener en Splash
     if (sessionManager.status == SessionStatus.initializing) {
       return Routes.splash;
     }
 
-    // 2. Si NO está autenticado -> Mandar a Welcome/Login
+    // 2. Si NO estA autenticado -> Mandar a Welcome/Login
     if (sessionManager.status == SessionStatus.unauthenticated) {
       final isPublic = Routes.publicRoutes.contains(state.matchedLocation);
       return isPublic ? null : Routes.welcom;
@@ -176,6 +179,13 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
           ),
         );
       }),
+    ),
+    GoRoute(
+      path: Routes.controlDeNivel,
+      builder: (context, state) {
+        final DeviceModel device = state.extra as DeviceModel;
+        return ControlDeNivelScreen(viewModel: ControlDeNivelModelViewModel());
+      },
     ),
     GoRoute(
       path: Routes.syncFailed,

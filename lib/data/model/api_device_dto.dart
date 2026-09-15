@@ -19,7 +19,7 @@ class ApiDeviceDto {
     switch (type) {
       case 'Medidor':
         return DeviceType.medidor;
-      case 'LevelController':
+      case 'control_de_nivel':
         return DeviceType.controlDeNivel;
       default:
         return DeviceType.unknown;

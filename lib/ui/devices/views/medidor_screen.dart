@@ -96,7 +96,7 @@ class _MedidorHomePage extends StatelessWidget {
           );
         }
 
-        final percent = medidor.percent;
+        final percent = medidor.status.percent;
 
         return AppScaffold(
           showHeader: true,
@@ -204,10 +204,10 @@ class _MedidorHomePage extends StatelessWidget {
                   ),
                   child: ListTile(
                     leading: Icon(
-                      medidor.sensorState
+                      medidor.status.sensorState
                           ? Icons.check_circle
                           : Icons.warning_rounded,
-                      color: medidor.sensorState
+                      color: medidor.status.sensorState
                           ? context.colors.primary
                           : context.colors.error,
                     ),
@@ -216,7 +216,7 @@ class _MedidorHomePage extends StatelessWidget {
                       style: context.textTheme.titleSmall,
                     ),
                     subtitle: Text(
-                      medidor.sensorState
+                      medidor.status.sensorState
                           ? 'El sensor funciona correctamente.'
                           : 'El sensor reporta fallas en la lectura.',
                     ),
@@ -300,15 +300,6 @@ class _MedidorSettingsPage extends StatelessWidget {
     }
 
     final currentAlert = viewModel.medidor?.parameters.alert ?? false;
-
-    await viewModel.updateConfiguration(
-      deviceId: viewModel.device.id,
-      type: DeviceIconMapper.getTypeString(viewModel.device.type).toLowerCase(),
-      height: height,
-      levelHigh: levelHigh,
-      levelLow: levelLow,
-      alert: currentAlert,
-    );
 
     if (!context.mounted) return;
 

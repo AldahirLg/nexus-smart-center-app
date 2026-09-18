@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/data/model/medidor_dto.dart';
 import 'package:nexus_smart_center/data/repositories/real_time_repository.dart';
@@ -54,15 +52,13 @@ class MedidorViewModel extends ChangeNotifier {
   Future<void> handleInitialData(dynamic data) async {
     try {
       final json = Map<String, dynamic>.from(data);
-      final dto = MedidorInitialDto.fromJson(json);
-      _medidor = dto.toModel();
-
-      heightController.text = _medidor!.parameters.height.toString();
-      levelHighController.text = _medidor!.parameters.levelHigh.toString();
-      levelLowController.text = _medidor!.parameters.levelLow.toString();
-
-      _errorMessage = null;
-      notifyListeners();
+      _medidor = MedidorInitialDto.fromJson(json).toDomain();
+      //_errorMessage = null;
+      //_isLoading = false;
+      //heightController.text = _medidor!.parameters.height.toString();
+      //levelHighController.text = _medidor!.parameters.levelHigh.toString();
+      //levelLowController.text = _medidor!.parameters.levelLow.toString();
+      //notifyListeners();
     } catch (e) {
       _errorMessage = 'Datos iniciales del medidor inválidos';
       notifyListeners();
@@ -72,16 +68,17 @@ class MedidorViewModel extends ChangeNotifier {
   Future<void> handleMeasurement(dynamic data) async {
     try {
       final json = Map<String, dynamic>.from(data);
-      final dto = MedidorMeasurementDto.fromJson(json);
+      final update = MedidorDtoUpdate.fromJson(json);
+      print(json);
+      if (_medidor == null) return;
+      _medidor = switch (update) {
+        StatusMedidorUpdate(status: final s) => _medidor!.copyWith(status: s),
+        ParametersMedidorUpdate(parameters: final pr) => _medidor!.copyWith(
+          parameters: pr,
+        ),
+      };
 
-      if (_medidor != null) {
-        _medidor = _medidor!.copyWith(
-          percent: dto.percent,
-          battery: dto.battery,
-          sensorState: dto.sensorState,
-        );
-      }
-      print(_medidor);
+      _errorMessage = null;
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Datos de medición inválidos';
@@ -97,70 +94,13 @@ class MedidorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setConfiguration({
-    required int height,
-    required int levelHigh,
-    required int levelLow,
-    required bool alert,
-  }) {
-    _medidor =
-        (_medidor ??
-                MedidorModel(
-                  percent: 0,
-                  battery: 0,
-                  sensorState: false,
-                  parameters: const ParametersMedidor(
-                    alert: false,
-                    height: 0,
-                    levelHigh: 0,
-                    levelLow: 0,
-                  ),
-                ))
-            .copyWith(
-              parameters: ParametersMedidor(
-                alert: alert,
-                height: height,
-                levelHigh: levelHigh,
-                levelLow: levelLow,
-              ),
-            );
-
-    heightController.text = height.toString();
-    levelHighController.text = levelHigh.toString();
-    levelLowController.text = levelLow.toString();
-
-    notifyListeners();
-  }
-
-  Future<void> updateConfiguration({
-    required String deviceId,
-    required String type,
-    required int height,
-    required int levelHigh,
-    required int levelLow,
-    required bool alert,
-  }) async {
-    _isSaving = true;
-    _errorMessage = null;
-    notifyListeners();
-
+  Future<void> setParameters(ParametersMedidor parameters) async {
     try {
-      await _realTimeRepo.updateParameters(
-        data: {
-          'type': type,
-          'deviceId': deviceId,
-          'payload': {
-            'alert': alert,
-            'height': height,
-            'levelHigh': levelHigh,
-            'levelLow': levelLow,
-          },
-        },
-      );
+      final data = ParametersMedidorDto.fromDomain(parameters).toJson();
+      await _realTimeRepo.updateParameters(device: device, payload: data);
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
-      _isSaving = false;
       notifyListeners();
     }
   }

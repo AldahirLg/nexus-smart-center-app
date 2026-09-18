@@ -1,5 +1,7 @@
 import 'package:nexus_smart_center/data/service/auth_service.dart';
 import 'package:nexus_smart_center/data/service/socket_client.dart';
+import 'package:nexus_smart_center/models/device_model.dart';
+import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 
 class RealTimeRepository {
   final SocketClient _socket;
@@ -29,12 +31,41 @@ class RealTimeRepository {
     }
   }
 
-  Future<void> updateParameters({dynamic data}) async {
+  Future<void> updateParameters({
+    required DeviceModel device,
+    required Map<String, dynamic> payload,
+  }) async {
     await _ensureConnection();
+
     try {
+      final data = {
+        'type': DeviceIconMapper.getTypeString(device.type),
+        'deviceId': device.id,
+        'payload': payload,
+      };
+
       _socket.emit('device:update', data);
     } catch (e) {
-      throw Exception('No se pudo actualizar la configuración del dispostivo');
+      throw Exception('No se pudo actualizar el dispositivo');
+    }
+  }
+
+  Future<void> sendCommand({
+    required DeviceModel device,
+    required Map<String, dynamic> payload,
+  }) async {
+    await _ensureConnection();
+
+    try {
+      final data = {
+        'type': DeviceIconMapper.getTypeString(device.type),
+        'deviceId': device.id,
+        'payload': payload,
+      };
+
+      _socket.emit('device:command', data);
+    } catch (e) {
+      throw Exception('No se pudo actualizar el dispositivo');
     }
   }
 

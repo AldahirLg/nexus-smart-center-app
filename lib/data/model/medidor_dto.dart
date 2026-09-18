@@ -1,70 +1,155 @@
+import 'package:flutter/foundation.dart';
 import 'package:nexus_smart_center/models/medidor_model.dart';
 
 /// Payload inicial: { values: { realtime: {...}, parameters: {...} } }
 class MedidorInitialDto {
-  final int percent;
-  final bool sensorState;
-  final int height;
-  final int levelHigh;
-  final int levelLow;
-  final bool alert;
+  final StatusMedidorDto status;
+  final ParametersMedidorDto parameters;
 
-  MedidorInitialDto({
-    required this.percent,
-    required this.sensorState,
-    required this.height,
-    required this.levelHigh,
-    required this.levelLow,
-    required this.alert,
-  });
+  MedidorInitialDto({required this.status, required this.parameters});
 
   factory MedidorInitialDto.fromJson(Map<String, dynamic> json) {
-    final values = Map<String, dynamic>.from(json['values']);
-    final realtime = Map<String, dynamic>.from(values['realtime']);
-    final parameters = Map<String, dynamic>.from(values['parameters']);
-
     return MedidorInitialDto(
-      percent: (realtime['percent'] as num).toInt(),
-      sensorState: realtime['sensorState'] as bool,
-      height: (parameters['height'] as num).toInt(),
-      levelHigh: (parameters['levelHigh'] as num).toInt(),
-      levelLow: (parameters['levelLow'] as num).toInt(),
-      alert: parameters['alert'] as bool,
+      status: StatusMedidorDto.fromJson(
+        Map<String, dynamic>.from(json['status']),
+      ),
+      parameters: ParametersMedidorDto.fromJson(
+        Map<String, dynamic>.from(json['parameters']),
+      ),
     );
   }
 
-  MedidorModel toModel({int battery = 0}) {
+  MedidorModel toDomain() {
     return MedidorModel(
-      percent: percent,
-      battery: battery,
-      sensorState: sensorState,
-      parameters: ParametersMedidor(
-        alert: alert,
-        height: height,
-        levelLow: levelLow,
-        levelHigh: levelHigh,
-      ),
+      parameters: parameters.toDomain(),
+      status: status.toDomain(),
     );
   }
 }
 
-/// Payload de medición en tiempo real: { percent, sensor_state/sensor, battery }
-class MedidorMeasurementDto {
+class StatusMedidorDto {
   final int percent;
   final int battery;
   final bool sensorState;
-
-  MedidorMeasurementDto({
+  StatusMedidorDto({
     required this.percent,
     required this.battery,
     required this.sensorState,
   });
 
-  factory MedidorMeasurementDto.fromJson(Map<String, dynamic> json) {
-    return MedidorMeasurementDto(
-      percent: (json['percent'] as num).toInt(),
-      battery: (json['battery'] as num?)?.toInt() ?? 0,
-      sensorState: (json['sensorState']) as bool? ?? false,
+  factory StatusMedidorDto.fromJson(Map<String, dynamic> json) {
+    return StatusMedidorDto(
+      percent: json['percent'],
+      battery: json['battery'],
+      sensorState: json['sensorState'],
     );
   }
+
+  StatusMedidor toDomain() {
+    return StatusMedidor(
+      percent: percent,
+      battery: battery,
+      sensorState: sensorState,
+    );
+  }
+}
+
+class ParametersMedidorDto {
+  final bool alert;
+  final int height;
+  final int levelLow;
+  final int levelHigh;
+  final String mode;
+  final String pointerId;
+
+  ParametersMedidorDto({
+    required this.alert,
+    required this.height,
+    required this.levelLow,
+    required this.levelHigh,
+    required this.mode,
+    required this.pointerId,
+  });
+
+  factory ParametersMedidorDto.fromJson(Map<String, dynamic> json) {
+    return ParametersMedidorDto(
+      alert: json['alert'],
+      height: json['height'],
+      levelLow: json['levelLow'],
+      levelHigh: json['levelHigh'],
+      mode: json['mode'],
+      pointerId: json['pointerId'],
+    );
+  }
+
+  factory ParametersMedidorDto.fromDomain(ParametersMedidor model) {
+    return ParametersMedidorDto(
+      alert: model.alert,
+      height: model.height,
+      levelLow: model.levelLow,
+      levelHigh: model.levelHigh,
+      mode: model.mode,
+      pointerId: model.pointerId,
+    );
+  }
+
+  ParametersMedidor toDomain() {
+    return ParametersMedidor(
+      alert: alert,
+      height: height,
+      levelLow: levelLow,
+      levelHigh: levelHigh,
+      mode: mode,
+      pointerId: pointerId,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'parameters': {
+        'alert': alert,
+        'height': height,
+        'levelHigh': levelHigh,
+        'levelLow': levelLow,
+        'mode': mode,
+        'pointerId': pointerId,
+      },
+    };
+  }
+}
+
+sealed class MedidorDtoUpdate {
+  const MedidorDtoUpdate();
+
+  factory MedidorDtoUpdate.fromJson(Map<String, dynamic> json) {
+    if (json.containsKey('status')) {
+      return StatusMedidorUpdate(
+        StatusMedidorDto.fromJson(
+          Map<String, dynamic>.from(json['status']),
+        ).toDomain(),
+      );
+    }
+
+    if (json.containsKey('parameters')) {
+      return ParametersMedidorUpdate(
+        ParametersMedidorDto.fromJson(
+          Map<String, dynamic>.from(json['parameters']),
+        ).toDomain(),
+      );
+    }
+    throw FormatException(
+      'Payload de LevelController no reconocido: ${json.keys}',
+    );
+  }
+}
+
+class StatusMedidorUpdate extends MedidorDtoUpdate {
+  final StatusMedidor status;
+  StatusMedidorUpdate(this.status);
+}
+
+class ParametersMedidorUpdate extends MedidorDtoUpdate {
+  final ParametersMedidor parameters;
+
+  ParametersMedidorUpdate(this.parameters);
 }

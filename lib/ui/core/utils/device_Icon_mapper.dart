@@ -21,7 +21,7 @@ class DeviceIconMapper {
         return 'Medidor';
 
       case DeviceType.controlDeNivel:
-        return 'Control de nivel';
+        return 'control_de_nivel';
 
       case DeviceType.unknown:
         return 'Desconocido';

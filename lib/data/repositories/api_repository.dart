@@ -38,4 +38,32 @@ class ApiRepository {
         .map((json) => ApiDeviceDto.fromJson(json).toDomain())
         .toList();
   }
+
+  Future<List<DeviceModel>> getMedidores(String idToken) async {
+    final devicesRow = await _apiService.getMedidores(idToken);
+    if (devicesRow.statusCode != 200) {
+      throw Exception('Error al obtener dispositivos');
+    }
+    List<dynamic> devices = devicesRow.data;
+    return devices
+        .map((json) => ApiDeviceDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  Future<void> changeModeMedidor(
+    String idToken,
+    String deviceId,
+    String type,
+    String data,
+  ) async {
+    final changeMode = await _apiService.changeModeMedidor(
+      idToken,
+      deviceId,
+      type,
+      data,
+    );
+    if (changeMode.statusCode != 200) {
+      throw Exception('Error al cambiar de modo de dispositivos');
+    }
+  }
 }

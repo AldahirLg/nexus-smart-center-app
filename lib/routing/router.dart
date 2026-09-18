@@ -184,7 +184,16 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
       path: Routes.controlDeNivel,
       builder: (context, state) {
         final DeviceModel device = state.extra as DeviceModel;
-        return ControlDeNivelScreen(viewModel: ControlDeNivelModelViewModel());
+
+        return ChangeNotifierProvider(
+          create: (context) => ControlDeNivelModelViewModel(
+            apiRepo: context.read(),
+            authRepo: context.read(),
+            realTimeRepo: context.read(),
+            device: device,
+          )..init(),
+          child: const ControlDeNivelScreen(),
+        );
       },
     ),
     GoRoute(

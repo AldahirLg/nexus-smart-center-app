@@ -12,7 +12,7 @@ class CardContainer extends StatelessWidget {
     return Container(
       height: 150,
       width: 150,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: context.colors.surface,
@@ -52,6 +52,8 @@ class CardContainer extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          Text('$percent %'),
         ],
       ),
     );

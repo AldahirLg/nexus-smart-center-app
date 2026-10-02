@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/data/model/medidor_dto.dart';
+import 'package:nexus_smart_center/data/repositories/api_repository.dart';
+import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
 import 'package:nexus_smart_center/data/repositories/real_time_repository.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/models/medidor_model.dart';
+import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 
 class MedidorViewModel extends ChangeNotifier {
   final DeviceModel device;
   final RealTimeRepository _realTimeRepo;
+  final AuthRepository _authRepo;
+  final ApiRepository _apiRepo;
 
   MedidorViewModel({
     required RealTimeRepository realTimeRepo,
     required this.device,
-  }) : _realTimeRepo = realTimeRepo;
+    required AuthRepository authRepo,
+    required ApiRepository apiRepo,
+  }) : _authRepo = authRepo,
+       _apiRepo = apiRepo,
+       _realTimeRepo = realTimeRepo;
 
   final TextEditingController heightController = TextEditingController();
   final TextEditingController levelHighController = TextEditingController();
@@ -29,15 +38,15 @@ class MedidorViewModel extends ChangeNotifier {
   MedidorModel? _medidor;
   MedidorModel? get medidor => _medidor;
 
-  Future<void> init(String deviceId, String deviceType) async {
+  Future<void> init() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
-
+    print("Iniciando Medidoooooor");
     try {
       await _realTimeRepo.onDevice(
-        deviceId,
-        deviceType.toLowerCase(),
+        device.id,
+        DeviceIconMapper.getTypeString(device.type).toLowerCase(),
         handleInitialData,
         handleMeasurement,
       );
@@ -53,12 +62,13 @@ class MedidorViewModel extends ChangeNotifier {
     try {
       final json = Map<String, dynamic>.from(data);
       _medidor = MedidorInitialDto.fromJson(json).toDomain();
+      print(json);
       //_errorMessage = null;
       //_isLoading = false;
-      //heightController.text = _medidor!.parameters.height.toString();
-      //levelHighController.text = _medidor!.parameters.levelHigh.toString();
-      //levelLowController.text = _medidor!.parameters.levelLow.toString();
-      //notifyListeners();
+      heightController.text = _medidor!.parameters.height.toString();
+      levelHighController.text = _medidor!.parameters.levelHigh.toString();
+      levelLowController.text = _medidor!.parameters.levelLow.toString();
+      notifyListeners();
     } catch (e) {
       _errorMessage = 'Datos iniciales del medidor inválidos';
       notifyListeners();
@@ -88,9 +98,7 @@ class MedidorViewModel extends ChangeNotifier {
 
   void setAlert(bool value) {
     if (_medidor == null) return;
-    _medidor = _medidor!.copyWith(
-      parameters: _medidor!.parameters.copyWith(alert: value),
-    );
+    setParameters(_medidor!.parameters.copyWith(alert: value));
     notifyListeners();
   }
 
@@ -108,6 +116,55 @@ class MedidorViewModel extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // obtener controladores nivel
+  List<DeviceModel>? _controllers;
+  List<DeviceModel>? get controllers => _controllers;
+  bool _gettingControllers = false;
+  bool get gettingControllers => _gettingControllers;
+  String? _errorGettingControllers;
+  String? get errorGettingControllers => _errorGettingControllers;
+
+  Future<void> getMedidores() async {
+    _gettingControllers = true;
+    _controllers = null;
+    _errorGettingControllers = null;
+    notifyListeners();
+    try {
+      String? tokenId = await _authRepo.getIdToken();
+      _controllers = await _apiRepo.getLevelContorllers(tokenId!);
+    } catch (e) {
+      _errorGettingControllers = "Error: ${e.toString()}";
+    } finally {
+      _gettingControllers = false;
+      notifyListeners();
+    }
+  }
+
+  bool _isChancgeMode = false;
+  bool get isChangeAuto => _isChancgeMode;
+
+  Future<void> changeAutoMode(ParametersMedidor parameters) async {
+    _isChancgeMode = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final data = ParametersMedidorDto.fromDomain(parameters).toJson();
+      final idToken = await _authRepo.getIdToken();
+      final param = await _apiRepo.setParametersMedidor(
+        idToken!,
+        device.id,
+        data,
+      );
+      _medidor = _medidor!.copyWith(parameters: param);
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isChancgeMode = false;
+      notifyListeners();
+    }
   }
 
   @override

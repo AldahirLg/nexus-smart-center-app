@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nexus_smart_center/nexus_font/nexus_font_icons.dart';
 import 'package:nexus_smart_center/ui/auth/view_models/signup_view_model.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
+import 'package:nexus_smart_center/unen_font/unen_font_icons.dart';
 
 class SignUpScreen extends StatelessWidget {
   final SignupViewModel viewModel;
@@ -19,7 +19,7 @@ class SignUpScreen extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Icon(
-              NexusFont.nexusLogo,
+              UnenFont.unenicon,
               size: 140,
               color: context.colors.primary,
             ),

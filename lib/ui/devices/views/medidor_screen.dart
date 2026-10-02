@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nexus_smart_center/models/medidor_model.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
-import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/medidor_view_model.dart';
+import 'package:nexus_smart_center/ui/devices/widgets/level_controller_state.dart';
+import 'package:provider/provider.dart';
 
 class MedidorScreen extends StatefulWidget {
-  final MedidorViewModel viewModel;
-
-  const MedidorScreen({super.key, required this.viewModel});
+  const MedidorScreen({super.key});
 
   @override
   State<MedidorScreen> createState() => _MedidorScreenState();
@@ -15,21 +16,6 @@ class MedidorScreen extends StatefulWidget {
 
 class _MedidorScreenState extends State<MedidorScreen> {
   int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.viewModel.init(
-      widget.viewModel.device.id,
-      DeviceIconMapper.getTypeString(widget.viewModel.device.type),
-    );
-  }
-
-  @override
-  void dispose() {
-    widget.viewModel.dispose();
-    super.dispose();
-  }
 
   void _onNavigationTap(int index) {
     setState(() {
@@ -39,39 +25,82 @@ class _MedidorScreenState extends State<MedidorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          _MedidorHomePage(viewModel: widget.viewModel),
-          _MedidorSettingsPage(viewModel: widget.viewModel),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, size: 20),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
+    final viewModel = context.watch<MedidorViewModel>();
+    final medidor = viewModel.medidor;
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, child) {
+        if (viewModel.isLoading || medidor == null || viewModel.isChangeAuto) {
+          return const AppScaffold(
+            showHeader: true,
+            title: 'Medidor de nivel',
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (viewModel.medidor!.parameters.mode == "extension") {
+          return AppScaffold(
+            showHeader: true,
+            title: 'Medidor de nivel',
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Este dispositivo esta en moodo Extension"),
+                  SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      viewModel.changeAutoMode(
+                        viewModel.medidor!.parameters.copyWith(
+                          mode: 'auto',
+                          pointerId: '',
+                        ),
+                      );
+                    },
+                    child: viewModel.isChangeAuto
+                        ? CircularProgressIndicator()
+                        : Text('Camibar a automatico'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return Scaffold(
+          body: IndexedStack(
+            index: _currentIndex,
+            children: [
+              _MedidorHomePage(viewModel: viewModel),
+              _MedidorSettingsPage(viewModel: viewModel),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined, size: 20),
-            activeIcon: Icon(Icons.settings),
-            label: 'Ver más',
+          bottomNavigationBar: BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined, size: 20),
+                activeIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings_outlined, size: 20),
+                activeIcon: Icon(Icons.settings),
+                label: 'Ver más',
+              ),
+            ],
+            currentIndex: _currentIndex,
+            selectedItemColor: context.colors.primary,
+            selectedLabelStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+            onTap: _onNavigationTap,
           ),
-        ],
-        currentIndex: _currentIndex,
-        selectedItemColor: context.colors.primary,
-        selectedLabelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-        ),
-        onTap: _onNavigationTap,
-      ),
+        );
+      },
     );
   }
 }
@@ -87,20 +116,10 @@ class _MedidorHomePage extends StatelessWidget {
       listenable: viewModel,
       builder: (context, child) {
         final medidor = viewModel.medidor;
-
-        if (viewModel.isLoading || medidor == null) {
-          return const AppScaffold(
-            showHeader: true,
-            title: 'Medidor de nivel',
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final percent = medidor.status.percent;
-
+        final percent = medidor!.status.percent;
         return AppScaffold(
           showHeader: true,
-          title: 'Medidor de nivel',
+          title: viewModel.device.name,
           body: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
             child: Column(
@@ -175,6 +194,12 @@ class _MedidorHomePage extends StatelessWidget {
                           icon: Icons.water,
                           title: 'Nivel',
                           value: '$percent %',
+                        ),
+                        Divider(height: 24, color: context.colors.secondary),
+                        _InfoRow(
+                          icon: Icons.battery_full,
+                          title: 'Bateria',
+                          value: '${medidor.status.battery} cm',
                         ),
                         Divider(height: 24, color: context.colors.secondary),
                         _InfoRow(
@@ -309,10 +334,14 @@ class _MedidorSettingsPage extends StatelessWidget {
       ).showSnackBar(SnackBar(content: Text(viewModel.errorMessage!)));
       return;
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Configuración guardada correctamente.')),
+    viewModel.setParameters(
+      viewModel.medidor!.parameters.copyWith(
+        height: height,
+        levelHigh: levelHigh,
+        levelLow: levelLow,
+      ),
     );
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -437,7 +466,222 @@ class _MedidorSettingsPage extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 30),
+
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: context.colors.surface,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 3),
+                        color: context.colors.secondary,
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    title: Text(
+                      'Modo: Automático',
+                      style: context.textTheme.titleSmall,
+                    ),
+                    subtitle: const Text(
+                      'Presiona el botón para cambiar a modo extensión',
+                    ),
+                    trailing: IconButton(
+                      onPressed: () {
+                        viewModel.getMedidores();
+                        _listeLevelControllers(context, viewModel);
+                      },
+                      icon: const Icon(Icons.swap_vert),
+                      color: context.colors.primary,
+                      tooltip: 'Cambiar modo',
+                    ),
+                  ),
+                ),
               ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _listeLevelControllers(
+    BuildContext context,
+    MedidorViewModel viewModel,
+  ) async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: context.colors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return ListenableBuilder(
+          listenable: viewModel,
+          builder: (context, _) {
+            return SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.6,
+              child: Column(
+                children: [
+                  // Indicador superior
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12, bottom: 8),
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: context.colors.outlineVariant,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: context.colors.primary.withValues(
+                              alpha: 0.1,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.water_drop_outlined,
+                            color: context.colors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Seleccionar dispositivo',
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Selecciona el controlador de nivel',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: _buildLevelControllerContent(context, viewModel),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildLevelControllerContent(
+    BuildContext context,
+    MedidorViewModel viewModel,
+  ) {
+    if (viewModel.gettingControllers) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (viewModel.errorGettingControllers != null) {
+      return LevelControllerState(
+        icon: Icons.error_outline,
+        title: 'No se pudieron obtener los medidores',
+        message: 'Ocurrió un error al consultar tus medidores.',
+        action: TextButton(
+          onPressed: viewModel.getMedidores,
+          child: const Text('Reintentar'),
+        ),
+      );
+    }
+
+    final medidores = viewModel.controllers;
+
+    if (medidores == null) {
+      return LevelControllerState(
+        icon: Icons.water_drop_outlined,
+        title: 'No hay información',
+        message: 'Todavía no se han cargado los dispositivos.',
+      );
+    }
+
+    if (medidores.isEmpty) {
+      return LevelControllerState(
+        icon: Icons.water_drop_outlined,
+        title: 'No hay dispositivos',
+        message: 'No tienes dispostivos disponibles para seleccionar.',
+      );
+    }
+
+    // 5. Hay controladores
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: medidores.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final controller = medidores[index];
+
+        return Material(
+          color: context.colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              viewModel.changeAutoMode(
+                viewModel.medidor!.parameters.copyWith(
+                  mode: 'extension',
+                  pointerId: controller.id,
+                ),
+              );
+              Navigator.pop(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: context.colors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.water_drop_outlined,
+                      color: context.colors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          controller.name,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: context.colors.outline),
+                ],
+              ),
             ),
           ),
         );

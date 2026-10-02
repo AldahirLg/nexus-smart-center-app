@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:nexus_smart_center/data/model/api_device_dto.dart';
 import 'package:nexus_smart_center/data/model/api_user_dto.dart';
+import 'package:nexus_smart_center/data/model/medidor_dto.dart';
 import 'package:nexus_smart_center/data/service/api_service.dart';
 import 'package:nexus_smart_center/data/service/socket_client.dart';
 import 'package:nexus_smart_center/models/api_user_model.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
+import 'package:nexus_smart_center/models/medidor_model.dart';
 
 class ApiRepository {
   ApiRepository({
@@ -39,8 +41,8 @@ class ApiRepository {
         .toList();
   }
 
-  Future<List<DeviceModel>> getMedidores(String idToken) async {
-    final devicesRow = await _apiService.getMedidores(idToken);
+  Future<List<DeviceModel>> getLevelContorllers(String idToken) async {
+    final devicesRow = await _apiService.getLevelController(idToken);
     if (devicesRow.statusCode != 200) {
       throw Exception('Error al obtener dispositivos');
     }
@@ -48,6 +50,24 @@ class ApiRepository {
     return devices
         .map((json) => ApiDeviceDto.fromJson(json).toDomain())
         .toList();
+  }
+
+  Future<ParametersMedidor> setParametersMedidor(
+    String idToken,
+    String deviceId,
+    Map<String, dynamic> json,
+  ) async {
+    final response = await _apiService.setParametersMedidor(
+      idToken,
+      deviceId,
+      json,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al cambiar parametros');
+    }
+    return ParametersMedidorDto.fromJson(
+      response.data['parameters'],
+    ).toDomain();
   }
 
   Future<void> changeModeMedidor(

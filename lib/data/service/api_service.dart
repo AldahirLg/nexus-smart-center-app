@@ -29,9 +29,10 @@ class ApiService {
     return response;
   }
 
-  Future<Response> getMedidores(String idToken) async {
+  // mejorar este get
+  Future<Response> getLevelController(String idToken) async {
     final response = await _dio.get(
-      '/device/devices/Medidor/',
+      '/device/devices/control_de_nivel/',
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
     return response;
@@ -43,6 +44,19 @@ class ApiService {
       data: {'token': fcmToken},
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
+  }
+
+  Future<Response> setParametersMedidor(
+    String idToken,
+    String deviceId,
+    Map<String, dynamic> json,
+  ) async {
+    final response = await _dio.post(
+      '/device/medidor/$deviceId/',
+      data: json,
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+    );
+    return response;
   }
 
   Future<Response> changeModeMedidor(

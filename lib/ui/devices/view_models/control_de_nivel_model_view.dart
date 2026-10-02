@@ -53,7 +53,7 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       String? tokenId = await _authRepo.getIdToken();
-      _medidores = await _apiRepo.getMedidores(tokenId!);
+      _medidores = await _apiRepo.getLevelContorllers(tokenId!);
     } catch (e) {
       _errorGettingMedidores = "Error: ${e.toString()}";
     } finally {
@@ -130,7 +130,7 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
     try {
       final data = ParametersLevelControllerDto.fromDomain(parameters).toJson();
       print(data);
-      await _realTimeRepo.updateParameters(device: device, payload: data);
+      await _realTimeRepo.sendCommand(device: device, payload: data);
     } catch (e) {
       _errorMessage = e.toString();
     } finally {

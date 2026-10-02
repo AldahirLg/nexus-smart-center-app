@@ -68,14 +68,14 @@ class _BombaCardState extends State<BombaCard> {
               SegmentedButton<BombaMode>(
                 segments: const [
                   ButtonSegment(
-                    value: BombaMode.automatic,
-                    label: Text('Automático'),
-                    icon: Icon(Icons.auto_mode),
-                  ),
-                  ButtonSegment(
                     value: BombaMode.manual,
                     label: Text('Manual'),
                     icon: Icon(Icons.touch_app_outlined),
+                  ),
+                  ButtonSegment(
+                    value: BombaMode.automatic,
+                    label: Text('Automático'),
+                    icon: Icon(Icons.auto_mode),
                   ),
                 ],
                 selected: {widget.mode},

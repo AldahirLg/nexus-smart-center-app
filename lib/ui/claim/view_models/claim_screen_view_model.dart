@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:nexus_smart_center/data/repositories/ble_repository.dart';
 import 'package:nexus_smart_center/data/repositories/claim_repository.dart';
+import 'package:nexus_smart_center/data/repositories/wifi_repository.dart';
+import 'package:nexus_smart_center/models/wifi_model.dart';
 
 enum ProvisioningStep {
   idle,
@@ -26,17 +28,18 @@ enum ProvisioningStep {
 class ClaimDeviceViewModel extends ChangeNotifier {
   final BleRepository _bleRepository;
   final ClaimRepository _claimRepository;
-
+  final WifiRepository _wifiRepo;
   ClaimDeviceViewModel({
     required BleRepository bleRepository,
     required ClaimRepository claimRepository,
+    required WifiRepository wifiRepo,
   }) : _bleRepository = bleRepository,
-       _claimRepository = claimRepository {
+       _claimRepository = claimRepository,
+       _wifiRepo = wifiRepo {
     _bleStateSub = _bleRepository.state.listen(_onBleStateChanged);
   }
 
-  static const String _ssid = 'INFINITUM83A0_2.4';
-  static const String _password = '5Roble1620';
+  WifiModel? _wifiModel;
 
   late final StreamSubscription<BleProvisioningState> _bleStateSub;
 
@@ -90,6 +93,8 @@ class ClaimDeviceViewModel extends ChangeNotifier {
     String? deviceUid;
 
     try {
+      _wifiModel = await _wifiRepo.getWifiSaved();
+
       _setStep(ProvisioningStep.connectingBle);
       await _bleRepository.connectAndPrepare(device);
 
@@ -103,8 +108,8 @@ class ClaimDeviceViewModel extends ChangeNotifier {
 
       _setStep(ProvisioningStep.sendingCredentials);
       final result = await _bleRepository.sendProvisioningPayload(
-        ssid: _ssid,
-        password: _password,
+        ssid: _wifiModel!.ssid,
+        password: _wifiModel!.pass!,
         tokenClaim: claimToken,
       );
 

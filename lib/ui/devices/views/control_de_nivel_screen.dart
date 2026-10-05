@@ -4,10 +4,11 @@ import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/control_de_nivel_model_view.dart';
 import 'package:nexus_smart_center/ui/devices/widgets/bomba_card.dart';
-import 'package:nexus_smart_center/ui/devices/widgets/card_container.dart';
-import 'package:nexus_smart_center/ui/devices/widgets/card_info_devices.dart';
+import 'package:nexus_smart_center/ui/devices/widgets/cisterna_card.dart';
 import 'package:nexus_smart_center/ui/devices/widgets/edit_parameters_LC.dart';
 import 'package:nexus_smart_center/ui/devices/widgets/panel_parameters_LC.dart';
+import 'package:nexus_smart_center/ui/devices/widgets/parameters_card.dart';
+import 'package:nexus_smart_center/ui/devices/widgets/tinaco_card.dart';
 import 'package:provider/provider.dart';
 
 class ControlDeNivelScreen extends StatefulWidget {
@@ -96,23 +97,16 @@ class _ControlHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: CardContainer(
-                    percent: viewModel.levelController!.status.tinLevel,
-                    title: 'Tinaco',
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: CardContainer(
-                    percent: viewModel.levelController!.status.cisLevel,
-                    title: 'Cisterna',
-                  ),
-                ),
-              ],
+            TinacoCard(
+              level: viewModel.levelController!.status.tinLevel,
+              sensor: viewModel.levelController!.status.sensorTin,
+              connection: viewModel.levelController!.status.connectionTin,
+              battery: viewModel.levelController!.status.tinBattery,
+            ),
+            SizedBox(height: 12),
+            CisternaCard(
+              level: viewModel.levelController!.status.cisLevel,
+              sensorOk: viewModel.levelController!.status.sensorCis,
             ),
             SizedBox(height: 12),
             BombaCard(
@@ -122,13 +116,6 @@ class _ControlHomePage extends StatelessWidget {
               isOn: viewModel.levelController!.pump.isOn,
               onModeChanged: viewModel.onModeChanged,
               onPowerChanged: viewModel.onPowerChanged,
-            ),
-            SizedBox(height: 12),
-            CardInfoDevices(
-              tinacoBateria: viewModel.levelController!.status.tinBattery,
-              tinacoSensor: viewModel.levelController!.status.sensorTin,
-              tinacoConexion: true,
-              cisternaSensor: viewModel.levelController!.status.sensorCis,
             ),
           ],
         ),
@@ -143,11 +130,7 @@ class _ControlSettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int heightCis = viewModel.levelController!.parameters.heightCis;
-    int heightTin = viewModel.levelController!.parameters.heightTin;
-    int levelHigh = viewModel.levelController!.parameters.levelHight;
-    int levelLow = viewModel.levelController!.parameters.levelLow;
-    int minCis = viewModel.levelController!.parameters.minCis;
+    final p = viewModel.levelController!.parameters;
 
     return AppScaffold(
       showHeader: true,
@@ -157,43 +140,50 @@ class _ControlSettingPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Configuración',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              decoration: BoxDecoration(
-                color: context.colors.surface,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 3),
-                    color: context.colors.shadow.withValues(alpha: 0.08),
-                  ),
-                ],
-              ),
-              child: PanelParametersLc(
-                heightCis: heightCis,
-                heightTin: heightTin,
-                levelHigh: levelHigh,
-                levelLow: levelLow,
-                minCis: minCis,
-              ),
+            ParametersCard(
+              title: 'Parametros',
+              icon: Icons.tune,
+              items: [
+                ParameterItem(
+                  icon: Icons.height,
+                  label: 'Altura cisterna',
+                  value: '${p.heightCis} cm',
+                ),
+                ParameterItem(
+                  icon: Icons.height,
+                  label: 'Altura tinaco',
+                  value: '${p.heightTin} cm',
+                ),
+                ParameterItem(
+                  icon: Icons.vertical_align_top,
+                  label: 'Nivel alto tinaco',
+                  value: '${p.levelHight} %',
+                ),
+                ParameterItem(
+                  icon: Icons.vertical_align_bottom,
+                  label: 'Nivel bajo tinaco',
+                  value: '${p.levelLow} %',
+                ),
+                ParameterItem(
+                  icon: Icons.warning_amber_rounded,
+                  label: 'Mínimo cisterna',
+                  value: '${p.minCis} %',
+                ),
+              ],
             ),
             const SizedBox(height: 20),
-            FilledButton.tonalIcon(
-              style: ElevatedButton.styleFrom(
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
                 backgroundColor: context.colors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               onPressed: () => _showEditConfigSheet(context, viewModel),
-              icon: Icon(Icons.tune, color: context.colors.surface),
-              label: Text(
-                'Editar configuración',
-                style: TextStyle(color: context.colors.surface),
+              label: const Text(
+                'Editar Parametros',
+                style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
           ],

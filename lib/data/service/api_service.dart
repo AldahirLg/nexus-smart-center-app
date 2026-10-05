@@ -72,4 +72,16 @@ class ApiService {
     );
     return response;
   }
+
+  Future<Response> updateNameDevice(
+    String idToken,
+    String deviceId,
+    String name,
+  ) async {
+    return await _dio.patch(
+      '/device/$deviceId/name',
+      data: {'name': name},
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+    );
+  }
 }

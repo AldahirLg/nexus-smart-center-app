@@ -28,6 +28,7 @@ class StatusLevelController {
   final int tinBattery;
   final bool sensorCis;
   final bool sensorTin;
+  final bool connectionTin;
 
   StatusLevelController({
     required this.tinLevel,
@@ -35,6 +36,7 @@ class StatusLevelController {
     required this.tinBattery,
     required this.sensorCis,
     required this.sensorTin,
+    required this.connectionTin,
   });
 }
 

@@ -56,13 +56,14 @@ class StatusLevelControllerDto {
   final int tinBattery;
   final bool sensorCis;
   final bool sensorTin;
-
+  final bool connectionTin;
   StatusLevelControllerDto({
     required this.tinLevel,
     required this.cisLevel,
     required this.tinBattery,
     required this.sensorCis,
     required this.sensorTin,
+    required this.connectionTin,
   });
 
   factory StatusLevelControllerDto.fromJson(Map<String, dynamic> json) {
@@ -72,6 +73,7 @@ class StatusLevelControllerDto {
       sensorCis: json['sensorCis'],
       sensorTin: json['sensorTin'],
       tinBattery: json['tinBattery'],
+      connectionTin: json['connectionTin'],
     );
   }
 
@@ -82,6 +84,7 @@ class StatusLevelControllerDto {
       tinBattery: model.tinBattery,
       sensorCis: model.sensorCis,
       sensorTin: model.sensorTin,
+      connectionTin: model.connectionTin,
     );
   }
 
@@ -92,6 +95,7 @@ class StatusLevelControllerDto {
       tinBattery: tinBattery,
       sensorCis: sensorCis,
       sensorTin: sensorTin,
+      connectionTin: connectionTin,
     );
   }
 

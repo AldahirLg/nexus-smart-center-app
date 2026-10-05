@@ -1,120 +1,200 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nexus_smart_center/routing/router.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
-import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
-import 'package:nexus_smart_center/ui/core/widgets/cards_acceso.dart';
 
 class VerMasScreen extends StatelessWidget {
   const VerMasScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsGeometry.all(12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text('App y Cuenta', style: context.textTheme.titleMedium),
-            ],
-          ),
-          SizedBox(height: 12),
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: context.colors.secondary, width: 1),
+    final colors = context.colors;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'App y cuenta',
+              style: context.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
               ),
-              width: double.infinity,
-              height: 120,
+            ),
+            const SizedBox(height: 16),
+            _Panel(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    height: 60,
-                    width: 60,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
-                      shape: .circle,
-                      color: context.colors.primary.withValues(alpha: .5),
+                      shape: BoxShape.circle,
+                      color: colors.primary.withValues(alpha: 0.15),
                     ),
                     child: Icon(
-                      Icons.person,
-                      size: 40,
-                      color: context.colors.primary,
+                      Icons.person_outline,
+                      size: 28,
+                      color: colors.primary,
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Aldahir Lopez',
-                        style: context.textTheme.titleMedium,
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'correo@example.com',
-                        style: context.textTheme.bodySmall,
-                      ),
-                    ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Perfil',
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Administra informacion de tu perfil',
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(width: 12),
-                  TextButton.icon(onPressed: () {}, label: Text('Editar')),
                 ],
               ),
             ),
-          ),
-          SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              shape: .rectangle,
-              border: Border.all(color: context.colors.secondary, width: 1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: InkWell(
-              onTap: () {
-                context.push(Routes.scanDevices);
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                        shape: .rectangle,
-                        borderRadius: BorderRadius.circular(20),
-                        color: context.colors.primary.withValues(alpha: .5),
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        size: 20,
-                        color: context.colors.primary,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      'Agregar dispositivo',
-                      style: context.textTheme.titleSmall,
-                    ),
-                    SizedBox(width: 12),
-                    Icon(Icons.arrow_right),
-                  ],
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 8),
+              child: Text(
+                'PREFERENCIAS',
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
                 ),
               ),
             ),
+            _Panel(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                children: [
+                  _OptionTile(
+                    icon: Icons.add,
+                    label: 'Agregar dispositivo',
+                    onTap: () {
+                      context.push(Routes.scanWiFi);
+                    },
+                  ),
+                  const _TileDivider(),
+                  _OptionTile(
+                    icon: Icons.settings,
+                    label: 'Gestion de dispositivos',
+                    onTap: () {
+                      context.push(Routes.manageDevice);
+                    },
+                  ),
+                  const _TileDivider(),
+                  _OptionTile(icon: Icons.wifi, label: 'Wi-Fi', onTap: () {}),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Panel extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const _Panel({required this.child, this.padding = const EdgeInsets.all(16)});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 8,
+            spreadRadius: 1,
+            offset: const Offset(0, 3),
+            color: colors.shadow.withValues(alpha: 0.06),
           ),
         ],
       ),
+      child: child,
+    );
+  }
+}
+
+class _OptionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _OptionTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+              ),
+              child: Icon(icon, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                label,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right, color: colors.onSurfaceVariant),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TileDivider extends StatelessWidget {
+  const _TileDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      indent: 68,
+      endIndent: 14,
+      color: context.colors.outlineVariant.withValues(alpha: 0.5),
     );
   }
 }

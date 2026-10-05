@@ -45,6 +45,7 @@ dependencies:
   wifi_scan: ^0.5.0
   firebase_messaging: ^16.6.0
   shared_preferences: ^2.5.5
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

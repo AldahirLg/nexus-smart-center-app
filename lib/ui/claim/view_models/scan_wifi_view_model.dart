@@ -14,8 +14,10 @@ class ScanWifiViewModel extends ChangeNotifier {
 
   Future<void> startScanWiFi() async {
     try {
-      await _repo.startScan();
+      listenResult();
       _networkSaved = await _repo.getWifiSaved();
+      await _repo.startScan();
+      notifyListeners();
     } catch (e) {
       print(e.toString());
     }

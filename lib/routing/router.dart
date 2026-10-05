@@ -17,8 +17,10 @@ import 'package:nexus_smart_center/ui/claim/views/claim_screen.dart';
 import 'package:nexus_smart_center/ui/claim/views/scan_wifi_screen.dart';
 import 'package:nexus_smart_center/ui/core/widgets/splash_screen.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/control_de_nivel_model_view.dart';
+import 'package:nexus_smart_center/ui/devices/view_models/manage_devices_mode_view.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/medidor_view_model.dart';
 import 'package:nexus_smart_center/ui/devices/views/control_de_nivel_screen.dart';
+import 'package:nexus_smart_center/ui/devices/views/manage_devices.dart';
 import 'package:nexus_smart_center/ui/devices/views/medidor_screen.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 import 'package:nexus_smart_center/ui/home/view_models/sync_failed_view_model.dart';
@@ -43,6 +45,7 @@ abstract final class Routes {
   static const String syncFailed = '/sync_failed';
   static const String scanWiFi = '/scan_wifi';
   static const String controlDeNivel = '/control_de_nivel';
+  static const String manageDevice = '/manage_device';
   static const shellRoutes = [home, verMas];
   static const publicRoutes = [welcom, signup, login];
   static const devicesRoutes = [medidor, controlDeNivel];
@@ -74,8 +77,7 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
     }
 
     if (sessionManager.status == SessionStatus.syncFailed) {
-      //return Routes.syncFailed;
-      return Routes.scanWiFi;
+      return Routes.syncFailed;
     }
 
     // 4. Si YA está autenticado y la ruta actual es Splash, Login/Welcome o VerifyEmail -> Ir a Home
@@ -162,6 +164,7 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
         final viewModel = ClaimDeviceViewModel(
           bleRepository: context.read(),
           claimRepository: context.read(),
+          wifiRepo: context.read(),
         );
         viewModel.claimDevice(deviceId);
         return ClaimDeviceScreen(viewModel: viewModel);
@@ -208,8 +211,23 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
     ),
     GoRoute(
       path: Routes.scanWiFi,
-      builder: (context, state) =>
-          ScanWifiScreen(viewModel: ScanWifiViewModel(repo: context.read())),
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (context) =>
+            ScanWifiViewModel(repo: context.read())..startScanWiFi(),
+        child: ScanWifiScreen(),
+      ),
+    ),
+
+    GoRoute(
+      path: Routes.manageDevice,
+
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (context) => ManageDevicesModeView(
+          authRepo: context.read(),
+          apiRepo: context.read(),
+        )..getDevices(),
+        child: ManageDevicesScreen(),
+      ),
     ),
   ],
 );

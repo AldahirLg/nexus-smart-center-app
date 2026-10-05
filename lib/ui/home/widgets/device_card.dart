@@ -11,85 +11,132 @@ class DeviceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: context.colors.surface,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: context.colors.secondary,
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-                spreadRadius: 1,
-              ),
-            ],
+    final colors = context.colors;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Ink(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: colors.outlineVariant.withValues(alpha: 0.5),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 8,
+              spreadRadius: 1,
+              offset: const Offset(0, 3),
+              color: colors.shadow.withValues(alpha: 0.06),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            _DeviceIcon(icon: DeviceIconMapper.getIcon(device.type)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     device.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                  ),
-                  Container(
-                    height: 48,
-                    width: 48,
-                    decoration: BoxDecoration(
-                      color: context.colors.secondary,
-                      borderRadius: BorderRadius.circular(14),
+                    style: context.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
-                    child: Icon(Icons.edit),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      _TypeChip(
+                        label: DeviceIconMapper.getTypeString(device.type),
+                      ),
+                    ],
                   ),
                 ],
               ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+              ),
+              child: Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-              const SizedBox(height: 4),
-              Divider(height: 2, color: context.colors.secondary),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    height: 80,
-                    width: 80,
-                    decoration: BoxDecoration(
-                      color: context.colors.secondary,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: DeviceIconMapper.getImage(device.type) != null
-                        ? Image.asset(
-                            DeviceIconMapper.getImage(device.type)!,
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.contain,
-                          )
-                        : Icon(DeviceIconMapper.getIcon(device.type)),
-                  ),
-                  SizedBox(width: 12),
-                  Text(
-                    DeviceIconMapper.getTypeString(device.type),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      fontSize: 15,
-                      color: context.colors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+class _DeviceIcon extends StatelessWidget {
+  final IconData icon;
+
+  const _DeviceIcon({required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colors.primary.withValues(alpha: 0.18),
+                colors.primary.withValues(alpha: 0.06),
+              ],
+            ),
+          ),
+          child: Icon(icon, size: 28, color: colors.primary),
+        ),
+      ],
+    );
+  }
+}
+
+class _TypeChip extends StatelessWidget {
+  final String label;
+  const _TypeChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: colors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.labelSmall?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

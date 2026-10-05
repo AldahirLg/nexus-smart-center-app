@@ -5,10 +5,10 @@ class DeviceIconMapper {
   static IconData getIcon(DeviceType type) {
     switch (type) {
       case DeviceType.medidor:
-        return Icons.water_drop;
+        return Icons.sensors_rounded;
 
       case DeviceType.controlDeNivel:
-        return Icons.water;
+        return Icons.water_damage;
 
       case DeviceType.unknown:
         return Icons.devices_other_outlined;
@@ -18,7 +18,7 @@ class DeviceIconMapper {
   static String getTypeString(DeviceType type) {
     switch (type) {
       case DeviceType.medidor:
-        return 'Medidor';
+        return 'medidor';
 
       case DeviceType.controlDeNivel:
         return 'control_de_nivel';

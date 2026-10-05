@@ -15,14 +15,16 @@ class WifiRepository {
 
   Stream<List<WiFiAccessPoint>> get results => _wifi.results;
 
-  Future<void> startScan() async {
-    await _wifi.startScan();
+  Future<bool> startScan() async {
+    return await _wifi.startScan();
   }
 
   Future<WifiModel?> getWifiSaved() async {
     String? ssid = await _persistence.getWifiSsid();
     String? pass = await _persistence.getWifiPass();
+
     if (ssid == null || pass == null) return null;
+
     return WifiModel(ssid: ssid, pass: pass);
   }
 

@@ -86,4 +86,16 @@ class ApiRepository {
       throw Exception('Error al cambiar de modo de dispositivos');
     }
   }
+
+  Future<DeviceModel> updateNameDevice(
+    String idToken,
+    String deviceId,
+    String name,
+  ) async {
+    final update = await _apiService.updateNameDevice(idToken, deviceId, name);
+    if (update.statusCode != 200) {
+      throw Exception('Error al actualizar nombre');
+    }
+    return ApiDeviceDto.fromJson(update.data).toDomain();
+  }
 }

@@ -4,7 +4,14 @@ class WifiScanService {
   Stream<List<WiFiAccessPoint>> get results =>
       WiFiScan.instance.onScannedResultsAvailable;
 
-  Future<void> startScan() async {
-    await WiFiScan.instance.startScan();
+  Future<bool> startScan() async {
+    final can = await WiFiScan.instance.canStartScan(askPermissions: true);
+
+    if (can != CanStartScan.yes) {
+      print('No se puede escanear WiFi: $can');
+      return false;
+    }
+
+    return await WiFiScan.instance.startScan();
   }
 }

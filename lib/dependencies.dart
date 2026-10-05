@@ -12,6 +12,7 @@ import 'package:nexus_smart_center/data/service/api_service.dart';
 import 'package:nexus_smart_center/data/service/auth_service.dart';
 import 'package:nexus_smart_center/data/service/ble_service.dart';
 import 'package:nexus_smart_center/data/service/fcm_service.dart';
+import 'package:nexus_smart_center/data/service/persistence_service.dart';
 import 'package:nexus_smart_center/data/service/socket_client.dart';
 import 'package:nexus_smart_center/data/service/wifi_scan_service.dart';
 import 'package:nexus_smart_center/domain/session_manager.dart';
@@ -37,7 +38,7 @@ class Dependencies extends StatelessWidget {
         Provider<ApiService>(
           create: (context) => ApiService(context.read<Dio>()),
         ),
-
+        Provider<PersistenceService>(create: (_) => PersistenceService()),
         //  Repositorios
         Provider(
           create: (context) => FcmRepository(
@@ -45,7 +46,10 @@ class Dependencies extends StatelessWidget {
             apiService: context.read(),
           ),
         ),
-        Provider(create: (context) => WifiRepository(wifi: context.read())),
+        Provider(
+          create: (context) =>
+              WifiRepository(wifi: context.read(), persistence: context.read()),
+        ),
         Provider(
           create: (context) => ApiRepository(
             apiService: context.read(),

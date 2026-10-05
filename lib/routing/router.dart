@@ -74,7 +74,8 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
     }
 
     if (sessionManager.status == SessionStatus.syncFailed) {
-      return Routes.syncFailed;
+      //return Routes.syncFailed;
+      return Routes.scanWiFi;
     }
 
     // 4. Si YA está autenticado y la ruta actual es Splash, Login/Welcome o VerifyEmail -> Ir a Home

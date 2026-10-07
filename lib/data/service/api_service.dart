@@ -6,7 +6,7 @@ class ApiService {
   final Dio _dio;
   Future<Response> syncUser({required String idToken}) async {
     final response = await _dio.post(
-      '/user/sync',
+      '/auth/sync',
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
     return response;
@@ -23,7 +23,7 @@ class ApiService {
 
   Future<Response> getDevices(String idToken) async {
     final response = await _dio.get(
-      '/device/',
+      '/devices/',
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
     return response;
@@ -32,7 +32,8 @@ class ApiService {
   // mejorar este get
   Future<Response> getLevelController(String idToken) async {
     final response = await _dio.get(
-      '/device/devices/control_de_nivel/',
+      '/devices',
+      queryParameters: {'type': 'control_de_nivel'},
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
     return response;

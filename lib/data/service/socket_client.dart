@@ -78,6 +78,34 @@ class SocketClient {
     return socket;
   }
 
+  Future<dynamic> emitWithAck(
+    String event,
+    dynamic data, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    if (!isConnected) {
+      throw Exception('Socket no conectado');
+    }
+
+    final completer = Completer<dynamic>();
+
+    _socket!.emitWithAck(
+      event,
+      data,
+      ack: (response) {
+        if (!completer.isCompleted) {
+          completer.complete(response);
+        }
+      },
+    );
+
+    try {
+      return await completer.future.timeout(timeout);
+    } on TimeoutException {
+      throw Exception('Timeout esperando respuesta del servidor');
+    }
+  }
+
   void emit(String event, dynamic data) {
     _socket?.emit(event, data);
   }

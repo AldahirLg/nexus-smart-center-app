@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/data/model/level_controller_dto.dart';
 import 'package:nexus_smart_center/data/repositories/api_repository.dart';
@@ -7,7 +5,6 @@ import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
 import 'package:nexus_smart_center/data/repositories/real_time_repository.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/models/level_controller_model.dart';
-import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 import 'package:nexus_smart_center/ui/devices/widgets/bomba_card.dart';
 
 class ControlDeNivelModelViewModel extends ChangeNotifier {
@@ -25,6 +22,7 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
        _apiRepo = apiRepo,
        _realTimeRepo = realTimeRepo,
        _device = device;
+
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
@@ -36,13 +34,15 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
 
   LevelControllerModel? _levelController;
   LevelControllerModel? get levelController => _levelController;
+
   DeviceModel get device => _device;
 
-  // obtener medidores
   List<DeviceModel>? _medidores;
   List<DeviceModel>? get medidores => _medidores;
+
   bool _gettingMedidores = false;
   bool get gettingMedidores => _gettingMedidores;
+
   String? _errorGettingMedidores;
   String? get errorGettingMedidores => _errorGettingMedidores;
 
@@ -51,11 +51,12 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
     _medidores = null;
     _errorGettingMedidores = null;
     notifyListeners();
+
     try {
-      String? tokenId = await _authRepo.getIdToken();
+      final tokenId = await _authRepo.getIdToken();
       _medidores = await _apiRepo.getLevelContorllers(tokenId!);
     } catch (e) {
-      _errorGettingMedidores = "Error: ${e.toString()}";
+      _errorGettingMedidores = 'Error: ${e.toString()}';
     } finally {
       _gettingMedidores = false;
       notifyListeners();
@@ -65,55 +66,46 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
   Future<void> init() async {
     _isLoading = true;
     _errorMessage = null;
-
     notifyListeners();
 
     try {
-      await _realTimeRepo.onDevice(
-        device.id,
-        DeviceIconMapper.getTypeString(device.type).toLowerCase(),
-        handleInitialData,
-        handleData,
-      );
+      final response = await _realTimeRepo.subscribeDevice(device.id);
+
+      final data = Map<String, dynamic>.from(response['data']);
+
+      _levelController = LevelControllerInitDto.fromJson(data).toDomain();
+
+      _realTimeRepo.listenDeviceData(_handleData);
+
+      _isLoading = false;
+      notifyListeners();
     } catch (e) {
       _errorMessage = e.toString();
       _isLoading = false;
-
       notifyListeners();
     }
   }
 
-  Future<void> handleInitialData(dynamic data) async {
+  void _handleData(dynamic data) {
     try {
       final json = Map<String, dynamic>.from(data);
-      print(json);
-      _levelController = LevelControllerInitDto.fromJson(json).toDomain();
+      final update = LevelControllerUpdate.fromJson(
+        Map<String, dynamic>.from(json['data']),
+      );
 
-      _errorMessage = null;
-      _isLoading = false;
-
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = 'Datos iniciales del controlador inválidos';
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> handleData(dynamic data) async {
-    try {
-      final json = Map<String, dynamic>.from(data);
-      final update = LevelControllerUpdate.fromJson(json);
-      print(json);
       if (_levelController == null) return;
 
       _levelController = switch (update) {
-        StatusUpdate(status: final s) => _levelController!.copyWith(status: s),
-        PumpUpdate(pump: final p) => _levelController!.copyWith(pump: p),
-        ParametersUpdate(parameters: final pr) => _levelController!.copyWith(
-          parameters: pr,
+        StatusUpdate(status: final status) => _levelController!.copyWith(
+          status: status,
         ),
+
+        PumpUpdate(pump: final pump) => _levelController!.copyWith(pump: pump),
+
+        ParametersUpdate(parameters: final parameters) =>
+          _levelController!.copyWith(parameters: parameters),
       };
+
       _errorMessage = null;
       notifyListeners();
     } catch (e) {
@@ -129,8 +121,12 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
 
     try {
       final data = ParametersLevelControllerDto.fromDomain(parameters).toJson();
-      print(data);
-      await _realTimeRepo.sendCommand(device: device, payload: data);
+
+      await _realTimeRepo.sendCommand(
+        deviceId: device.id,
+        action: 'parameters',
+        payload: data,
+      );
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
@@ -141,9 +137,11 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
 
   Future<void> setPump(PumpLevelController pump) async {
     try {
-      final data = PumpLevelControllerDto.fromDomain(pump).toJson();
-
-      await _realTimeRepo.sendCommand(device: device, payload: data);
+      await _realTimeRepo.sendCommand(
+        deviceId: device.id,
+        action: 'pump',
+        payload: {'isOn': pump.isOn, 'mode': pump.mode},
+      );
     } catch (e) {
       _errorMessage = e.toString();
       notifyListeners();
@@ -160,12 +158,10 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
       mode: mode == BombaMode.automatic ? 'AUTO' : 'MANUAL',
     );
 
-    // Actualización optimista de UI
     _levelController = _levelController!.copyWith(pump: newPump);
 
     notifyListeners();
 
-    // Enviar al dispositivo
     await setPump(newPump);
   }
 
@@ -185,8 +181,7 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _realTimeRepo.dispose();
-
+    _realTimeRepo.stopListeningDeviceData();
     super.dispose();
   }
 }

@@ -14,14 +14,32 @@ class ApiUserDto {
     required this.createdAt,
     required this.updatedAt,
   });
+
   factory ApiUserDto.fromJson(Map<String, dynamic> json) {
     return ApiUserDto(
-      uid: json['uid'] as String,
+      uid: json['id'] as String,
       email: json['email'] as String,
       displayName: json['name'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: _parseFirestoreDate(json['createdAt']),
+      updatedAt: _parseFirestoreDate(json['updatedAt']),
     );
+  }
+
+  static DateTime _parseFirestoreDate(dynamic value) {
+    if (value is String) {
+      return DateTime.parse(value);
+    }
+
+    if (value is Map<String, dynamic>) {
+      final seconds = value['_seconds'] as int;
+      final nanoseconds = value['_nanoseconds'] as int? ?? 0;
+
+      return DateTime.fromMillisecondsSinceEpoch(
+        seconds * 1000 + nanoseconds ~/ 1000000,
+      );
+    }
+
+    throw FormatException('Formato de fecha no soportado: $value');
   }
 
   ApiUserModel toDomain() {

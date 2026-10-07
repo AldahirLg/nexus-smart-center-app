@@ -35,12 +35,16 @@ class _ControlDeNivelScreenState extends State<ControlDeNivelScreen> {
 
     if (levelController == null) {
       if (viewModel.isLoading) {
-        return const AppScaffold(
+        return AppScaffold(
+          showHeader: true,
+          title: viewModel.device.name,
           body: Center(child: CircularProgressIndicator()),
         );
       }
 
       return AppScaffold(
+        showHeader: true,
+        title: viewModel.device.name,
         body: Center(
           child: Text(viewModel.errorMessage ?? 'No se pudo cargar'),
         ),

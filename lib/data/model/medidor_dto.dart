@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:nexus_smart_center/models/medidor_model.dart';
 
-/// Payload inicial: { values: { realtime: {...}, parameters: {...} } }
 class MedidorInitialDto {
   final StatusMedidorDto status;
   final ParametersMedidorDto parameters;
@@ -114,6 +112,17 @@ class ParametersMedidorDto {
         'mode': mode,
         'pointerId': pointerId,
       },
+    };
+  }
+
+  Map<String, dynamic> toPayload() {
+    return {
+      'alert': alert,
+      'height': height,
+      'levelHigh': levelHigh,
+      'levelLow': levelLow,
+      'mode': mode,
+      'pointerId': pointerId,
     };
   }
 }

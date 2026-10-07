@@ -30,25 +30,37 @@ class ApiRepository {
   }
 
   Future<List<DeviceModel>> getDevices(String idToken) async {
-    final devicesRow = await _apiService.getDevices(idToken);
-    if (devicesRow.statusCode != 200) {
+    final response = await _apiService.getDevices(idToken);
+
+    if (response.statusCode != 200) {
       throw Exception('Error al obtener dispositivos');
     }
 
-    List<dynamic> devices = devicesRow.data;
-    return devices
-        .map((json) => ApiDeviceDto.fromJson(json).toDomain())
+    final data = response.data as Map<String, dynamic>;
+    final devicesJson = data['devices'] as List<dynamic>? ?? [];
+
+    return devicesJson
+        .map(
+          (json) =>
+              ApiDeviceDto.fromJson(json as Map<String, dynamic>).toDomain(),
+        )
         .toList();
   }
 
   Future<List<DeviceModel>> getLevelContorllers(String idToken) async {
-    final devicesRow = await _apiService.getLevelController(idToken);
-    if (devicesRow.statusCode != 200) {
+    final response = await _apiService.getLevelController(idToken);
+    if (response.statusCode != 200) {
       throw Exception('Error al obtener dispositivos');
     }
-    List<dynamic> devices = devicesRow.data;
-    return devices
-        .map((json) => ApiDeviceDto.fromJson(json).toDomain())
+
+    final data = response.data as Map<String, dynamic>;
+    final devicesJson = data['devices'] as List<dynamic>? ?? [];
+
+    return devicesJson
+        .map(
+          (json) =>
+              ApiDeviceDto.fromJson(json as Map<String, dynamic>).toDomain(),
+        )
         .toList();
   }
 

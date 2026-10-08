@@ -5,7 +5,7 @@ class ApiUserDto {
   final String email;
   final String? displayName;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   const ApiUserDto({
     required this.uid,
@@ -21,7 +21,9 @@ class ApiUserDto {
       email: json['email'] as String,
       displayName: json['name'] as String?,
       createdAt: _parseFirestoreDate(json['createdAt']),
-      updatedAt: _parseFirestoreDate(json['updatedAt']),
+      updatedAt: json['updatedAt'] != null
+          ? _parseFirestoreDate(json['updatedAt'])
+          : null,
     );
   }
 

@@ -53,6 +53,14 @@ class RealTimeRepository {
     _socket.off('device:data');
   }
 
+  void listenToClaimDevice(void Function(dynamic data) onClaim) {
+    _socket.on('device:claim', onClaim);
+  }
+
+  void stopListeningClaimDevice() {
+    _socket.off('device:claim');
+  }
+
   Future<void> sendCommand({
     required String deviceId,
     required String action,

@@ -14,7 +14,7 @@ class ApiService {
 
   Future<Response> claimToken(String idToken, String deviceId) async {
     final response = await _dio.post(
-      '/device/claim',
+      '/claims/',
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
       data: {'deviceId': deviceId},
     );
@@ -80,7 +80,7 @@ class ApiService {
     String name,
   ) async {
     return await _dio.patch(
-      '/device/$deviceId/name',
+      '/devices/$deviceId/',
       data: {'name': name},
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );

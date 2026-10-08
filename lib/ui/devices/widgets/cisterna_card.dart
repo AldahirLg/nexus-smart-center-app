@@ -17,6 +17,8 @@ class CisternaCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       decoration: BoxDecoration(
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.4)),
+
         color: colors.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [

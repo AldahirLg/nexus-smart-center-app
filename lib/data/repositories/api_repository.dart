@@ -108,6 +108,8 @@ class ApiRepository {
     if (update.statusCode != 200) {
       throw Exception('Error al actualizar nombre');
     }
-    return ApiDeviceDto.fromJson(update.data).toDomain();
+    return ApiDeviceDto.fromJson(
+      update.data['device'] as Map<String, dynamic>,
+    ).toDomain();
   }
 }

@@ -140,7 +140,20 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
       await _realTimeRepo.sendCommand(
         deviceId: device.id,
         action: 'pump',
-        payload: {'isOn': pump.isOn, 'mode': pump.mode},
+        payload: {'isOn': pump.isOn},
+      );
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<void> setMode(PumpLevelController pump) async {
+    try {
+      await _realTimeRepo.sendCommand(
+        deviceId: device.id,
+        action: 'pump',
+        payload: {'mode': pump.mode},
       );
     } catch (e) {
       _errorMessage = e.toString();
@@ -162,7 +175,7 @@ class ControlDeNivelModelViewModel extends ChangeNotifier {
 
     notifyListeners();
 
-    await setPump(newPump);
+    await setMode(newPump);
   }
 
   Future<void> onPowerChanged(bool isOn) async {

@@ -19,7 +19,7 @@ class ClaimRepository {
        _api = api,
        _socketClient = socketClient;
 
-  static const String _claimResultEvent = 'claim_result';
+  static const String _claimResultEvent = 'device:claim';
   static const Duration _confirmationTimeout = Duration(seconds: 30);
 
   Future<String> requestClaimToken(String deviceUid) async {

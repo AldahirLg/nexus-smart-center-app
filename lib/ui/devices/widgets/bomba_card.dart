@@ -27,6 +27,8 @@ class BombaCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.4)),
+
         boxShadow: [
           BoxShadow(
             blurRadius: 8,

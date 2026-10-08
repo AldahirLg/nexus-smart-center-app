@@ -3,7 +3,7 @@ class ApiUserModel {
   final String email;
   final String? displayName;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   ApiUserModel({
     required this.uid,

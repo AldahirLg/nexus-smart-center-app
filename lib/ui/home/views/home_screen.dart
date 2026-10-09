@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
-import 'package:nexus_smart_center/nexus_font/nexus_font_icons.dart';
 import 'package:nexus_smart_center/routing/router.dart';
 import 'package:nexus_smart_center/ui/core/route_observer.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';

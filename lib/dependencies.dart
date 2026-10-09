@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:nexus_smart_center/config/app_config.dart';
 import 'package:nexus_smart_center/data/repositories/api_repository.dart';
 import 'package:nexus_smart_center/data/repositories/auth_repository.dart';
 import 'package:nexus_smart_center/data/repositories/ble_repository.dart';
@@ -29,9 +30,7 @@ class Dependencies extends StatelessWidget {
       providers: [
         Provider<FcmService>(create: (_) => FcmService()),
         Provider<WifiScanService>(create: (_) => WifiScanService()),
-        Provider(
-          create: (_) => SocketClient(serverUrl: 'http://192.168.1.175:5000'),
-        ),
+        Provider(create: (_) => SocketClient(serverUrl: AppConfig.apiBaseUrl)),
         Provider<BLEservice>(create: (_) => BLEservice()),
         Provider<Dio>(create: (_) => ApiClient.instance.dio),
         Provider(create: (_) => FirebaseAuthService()),

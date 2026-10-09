@@ -28,6 +28,9 @@ import 'package:nexus_smart_center/ui/home/views/home_screen.dart';
 import 'package:nexus_smart_center/ui/home/views/main_navigation.dart';
 import 'package:nexus_smart_center/ui/home/views/sync_faile_screen.dart';
 import 'package:nexus_smart_center/ui/home/views/ver_mas_screen.dart';
+import 'package:nexus_smart_center/ui/user/views/change_name.dart';
+import 'package:nexus_smart_center/ui/user/views/perfil_screen.dart';
+import 'package:nexus_smart_center/ui/user/views/update_password_screen.dart';
 import 'package:provider/provider.dart';
 
 abstract final class Routes {
@@ -46,6 +49,9 @@ abstract final class Routes {
   static const String scanWiFi = '/scan_wifi';
   static const String controlDeNivel = '/control_de_nivel';
   static const String manageDevice = '/manage_device';
+  static const String perfil = '/perfil';
+  static const String changeNameUser = '/change_name_user';
+  static const String updatePasswordUser = '/update_pass_user';
   static const shellRoutes = [home, verMas];
   static const publicRoutes = [welcom, signup, login];
   static const devicesRoutes = [medidor, controlDeNivel];
@@ -228,6 +234,15 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
         )..getDevices(),
         child: ManageDevicesScreen(),
       ),
+    ),
+    GoRoute(path: Routes.perfil, builder: (context, state) => PerfilScreen()),
+    GoRoute(
+      path: Routes.changeNameUser,
+      builder: (context, state) => ChangeNameUserScreen(),
+    ),
+    GoRoute(
+      path: Routes.updatePasswordUser,
+      builder: (context, state) => UpdatePasswordScreen(),
     ),
   ],
 );

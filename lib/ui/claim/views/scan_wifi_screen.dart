@@ -28,6 +28,7 @@ class _ScanWifiScreenState extends State<ScanWifiScreen> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ScanWifiViewModel>();
+    final colors = context.colors;
 
     return AppScaffold(
       title: 'Selecciona tu red Wi-Fi',
@@ -46,8 +47,19 @@ class _ScanWifiScreenState extends State<ScanWifiScreen> {
                     height: 200,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: context.colors.secondary,
-                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 3),
+                          color: colors.shadow.withValues(alpha: 0.06),
+                        ),
+                      ],
+                      color: context.colors.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: colors.outlineVariant.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -61,7 +73,7 @@ class _ScanWifiScreenState extends State<ScanWifiScreen> {
                                 width: 50,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: context.colors.surface,
+                                  color: context.colors.secondary,
                                 ),
                                 child: const Icon(Icons.wifi),
                               ),
@@ -86,13 +98,16 @@ class _ScanWifiScreenState extends State<ScanWifiScreen> {
                             width: double.infinity,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: context.colors.surface,
+                                backgroundColor: context.colors.primary,
                                 elevation: 4,
                               ),
                               onPressed: () {
                                 context.push(Routes.scanDevices);
                               },
-                              child: const Text('Continuar'),
+                              child: Text(
+                                'Continuar',
+                                style: TextStyle(color: context.colors.surface),
+                              ),
                             ),
                           ),
                         ),

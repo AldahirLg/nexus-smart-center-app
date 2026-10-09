@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:nexus_smart_center/config/app_config.dart';
 
 class ApiClient {
   ApiClient._();
@@ -7,10 +8,7 @@ class ApiClient {
 
   late final Dio dio = Dio(
     BaseOptions(
-      baseUrl: const String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: 'http://192.168.1.175:5000',
-      ),
+      baseUrl: AppConfig.apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(seconds: 10),

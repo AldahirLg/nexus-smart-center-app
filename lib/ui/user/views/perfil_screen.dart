@@ -3,14 +3,17 @@ import 'package:go_router/go_router.dart';
 import 'package:nexus_smart_center/routing/router.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
+import 'package:nexus_smart_center/ui/user/view_models/perfil_view_model.dart';
 import 'package:nexus_smart_center/ui/user/widgets/option_tile.dart';
 import 'package:nexus_smart_center/ui/user/widgets/panel_content.dart';
+import 'package:provider/provider.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<PerfilViewModel>();
     final colors = context.colors;
 
     return AppScaffold(
@@ -131,12 +134,16 @@ class PerfilScreen extends StatelessWidget {
                       color: Colors.red,
                     ),
                     const _TileDivider(),
-                    OptionTilePerfil(
-                      icon: Icons.close,
-                      label: 'Cerrar sesion',
-                      onTap: () {},
-                      color: context.colors.primary,
-                    ),
+                    viewModel.isLogout
+                        ? Center(child: CircularProgressIndicator())
+                        : OptionTilePerfil(
+                            icon: Icons.close,
+                            label: 'Cerrar sesion',
+                            onTap: () {
+                              viewModel.logoutSesion();
+                            },
+                            color: context.colors.primary,
+                          ),
                   ],
                 ),
               ),

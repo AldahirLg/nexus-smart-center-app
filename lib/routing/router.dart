@@ -28,6 +28,7 @@ import 'package:nexus_smart_center/ui/home/views/home_screen.dart';
 import 'package:nexus_smart_center/ui/home/views/main_navigation.dart';
 import 'package:nexus_smart_center/ui/home/views/sync_faile_screen.dart';
 import 'package:nexus_smart_center/ui/home/views/ver_mas_screen.dart';
+import 'package:nexus_smart_center/ui/user/view_models/perfil_view_model.dart';
 import 'package:nexus_smart_center/ui/user/views/change_name.dart';
 import 'package:nexus_smart_center/ui/user/views/perfil_screen.dart';
 import 'package:nexus_smart_center/ui/user/views/update_password_screen.dart';
@@ -235,7 +236,13 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
         child: ManageDevicesScreen(),
       ),
     ),
-    GoRoute(path: Routes.perfil, builder: (context, state) => PerfilScreen()),
+    GoRoute(
+      path: Routes.perfil,
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (context) => PerfilViewModel(authRepo: context.read()),
+        child: PerfilScreen(),
+      ),
+    ),
     GoRoute(
       path: Routes.changeNameUser,
       builder: (context, state) => ChangeNameUserScreen(),

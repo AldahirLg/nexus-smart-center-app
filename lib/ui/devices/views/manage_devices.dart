@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/manage_devices_mode_view.dart';
+import 'package:nexus_smart_center/ui/user/widgets/option_tile.dart';
+import 'package:nexus_smart_center/ui/user/widgets/panel_content.dart';
 import 'package:provider/provider.dart';
 
 class ManageDevicesScreen extends StatelessWidget {
@@ -15,9 +17,11 @@ class ManageDevicesScreen extends StatelessWidget {
       context: context,
       builder: (_) => _EditNameDialog(initialName: device.name),
     );
+
     if (newName == null) return;
 
     final ok = await vm.updateDeviceName(device, newName);
+
     messenger.showSnackBar(
       SnackBar(
         content: Text(
@@ -33,15 +37,42 @@ class ManageDevicesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ManageDevicesModeView>();
 
-    Widget content;
-    if (vm.isLoading) {
-      content = const Center(child: CircularProgressIndicator());
-    } else if (vm.errorMessage != null && vm.devices.isEmpty) {
-      content = Center(
+    return AppScaffold(
+      showHeader: true,
+      title: 'Gestión de dispositivos',
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(vm.errorMessage!),
+            if (vm.isUpdating) ...[
+              const LinearProgressIndicator(),
+              const SizedBox(height: 12),
+            ],
+            PanelButtonsPerfil(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: _buildContent(vm),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(ManageDevicesModeView vm) {
+    if (vm.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (vm.errorMessage != null && vm.devices.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Text(vm.errorMessage!, textAlign: TextAlign.center),
             const SizedBox(height: 12),
             FilledButton(
               onPressed: vm.getDevices,
@@ -50,39 +81,37 @@ class ManageDevicesScreen extends StatelessWidget {
           ],
         ),
       );
-    } else if (vm.devices.isEmpty) {
-      content = const Center(child: Text('No hay dispositivos'));
-    } else {
-      content = RefreshIndicator(
-        onRefresh: vm.getDevices,
-        child: ListView.separated(
-          itemCount: vm.devices.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, i) {
-            final device = vm.devices[i];
-            return ListTile(
-              title: Text(device.name),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Cambiar nombre',
-                onPressed: vm.isUpdating
-                    ? null
-                    : () => _editName(context, device),
-              ),
-            );
-          },
-        ),
+    }
+
+    if (vm.devices.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: Text('No hay dispositivos')),
       );
     }
 
-    return AppScaffold(
-      showHeader: true,
-      title: 'Gestion de dispositivos',
-      body: Column(
-        children: [
-          if (vm.isUpdating) const LinearProgressIndicator(),
-          Expanded(child: content),
-        ],
+    return RefreshIndicator(
+      onRefresh: vm.getDevices,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: vm.devices.length,
+        separatorBuilder: (_, __) =>
+            const Divider(height: 1, indent: 16, endIndent: 16),
+        itemBuilder: (context, i) {
+          final device = vm.devices[i];
+
+          return ListTile(
+            title: Text(device.name),
+            trailing: IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Cambiar nombre',
+              onPressed: vm.isUpdating
+                  ? null
+                  : () => _editName(context, device),
+            ),
+          );
+        },
       ),
     );
   }
@@ -90,6 +119,7 @@ class ManageDevicesScreen extends StatelessWidget {
 
 class _EditNameDialog extends StatefulWidget {
   const _EditNameDialog({required this.initialName});
+
   final String initialName;
 
   @override

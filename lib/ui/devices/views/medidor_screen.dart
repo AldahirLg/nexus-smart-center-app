@@ -199,7 +199,7 @@ class _MedidorHomePage extends StatelessWidget {
                         _InfoRow(
                           icon: Icons.battery_full,
                           title: 'Bateria',
-                          value: '${medidor.status.battery} cm',
+                          value: '${medidor.status.battery} %',
                         ),
                         Divider(height: 24, color: context.colors.secondary),
                         _InfoRow(

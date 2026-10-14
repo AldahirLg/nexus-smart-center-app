@@ -22,6 +22,8 @@ class ClaimRepository {
   static const String _claimResultEvent = 'device:claim';
   static const Duration _confirmationTimeout = Duration(seconds: 30);
 
+  Completer<Map<String, dynamic>>? _claimCompleter;
+
   Future<String> requestClaimToken(String deviceUid) async {
     final tokenId = await _auth.getTokenId();
 
@@ -33,19 +35,31 @@ class ClaimRepository {
       final response = await _api.claimToken(tokenId, deviceUid);
 
       final claimToken = response.data['claimToken'];
+
       if (claimToken == null) {
         throw Exception('La API no devolvió claimToken.');
       }
+
       return claimToken.toString();
     } on DioException catch (e) {
-      final backendMessage = e.response?.data['message'] ?? e.message;
+      final backendMessage = e.response?.data is Map
+          ? e.response?.data['message'] ?? e.message
+          : e.message;
+
       debugPrint('[CLAIM] Backend rechazó el claim: $backendMessage');
+
       throw Exception(backendMessage);
     }
   }
 
-  Future<Map<String, dynamic>> awaitClaimConfirmation(String deviceUid) async {
+  /// Conecta el socket si es necesario y registra el listener
+  /// antes de enviar las credenciales por BLE.
+  Future<void> prepareClaimConfirmation() async {
+    // Evita conservar una escucha anterior.
+    cancelClaimConfirmation();
+
     final tokenId = await _auth.getTokenId();
+
     if (tokenId == null || tokenId.isEmpty) {
       throw Exception('No se pudo obtener el token de autenticación.');
     }
@@ -54,9 +68,17 @@ class ClaimRepository {
       await _socketClient.connect(tokenId);
     }
 
+    if (!_socketClient.isConnected) {
+      throw Exception('No se pudo establecer la conexión con el servidor.');
+    }
+
     final completer = Completer<Map<String, dynamic>>();
+    _claimCompleter = completer;
 
     void handler(dynamic data) {
+      debugPrint('[CLAIM][SOCKET] Evento recibido: $_claimResultEvent');
+      debugPrint('[CLAIM][SOCKET] Payload: $data');
+
       if (completer.isCompleted) return;
 
       if (data is Map) {
@@ -70,19 +92,39 @@ class ClaimRepository {
 
     _socketClient.on(_claimResultEvent, handler);
 
-    try {
-      debugPrint('[CLAIM] Uniendo a room de claim para $deviceUid');
-      _socketClient.emit('claim', {'uid': deviceUid});
+    debugPrint('[CLAIM][SOCKET] Listener registrado.');
+    debugPrint(
+      '[CLAIM][SOCKET] Socket conectado: ${_socketClient.isConnected}',
+    );
+  }
 
+  /// Espera el evento device:claim previamente registrado.
+  Future<Map<String, dynamic>> awaitClaimConfirmation() async {
+    final completer = _claimCompleter;
+
+    if (completer == null) {
+      throw StateError(
+        'Debes ejecutar prepareClaimConfirmation() antes de esperar.',
+      );
+    }
+
+    try {
       return await completer.future.timeout(_confirmationTimeout);
     } on TimeoutException {
       throw Exception('El servidor no confirmó el claim a tiempo.');
     } finally {
-      _socketClient.off(_claimResultEvent);
+      cancelClaimConfirmation();
     }
   }
 
+  /// Cancela la escucha pendiente.
+  void cancelClaimConfirmation() {
+    _socketClient.off(_claimResultEvent);
+    _claimCompleter = null;
+  }
+
   void disposeSocket() {
+    cancelClaimConfirmation();
     _socketClient.disconnect();
   }
 }

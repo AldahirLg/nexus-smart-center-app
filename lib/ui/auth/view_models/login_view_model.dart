@@ -10,6 +10,13 @@ class LoginViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _obscurePassword = true;
+  bool get obscurePassword => _obscurePassword;
+
+  void setObscurePass() {
+    _obscurePassword = !obscurePassword;
+    notifyListeners();
+  }
 
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
@@ -49,10 +56,12 @@ class LoginViewModel extends ChangeNotifier {
 
     try {
       await _authRepository.login(
-        emailController.text,
+        emailController.text.trim(),
         passwordController.text,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrintStack(stackTrace: stackTrace);
+
       _errorMessage = e.toString();
     } finally {
       _isLoading = false;

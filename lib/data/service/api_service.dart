@@ -74,6 +74,13 @@ class ApiService {
     return response;
   }
 
+  Future<Response> deleteDevice(String idToken, String deviceId) async {
+    return await _dio.delete(
+      '/devices/$deviceId/',
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+    );
+  }
+
   Future<Response> updateNameDevice(
     String idToken,
     String deviceId,

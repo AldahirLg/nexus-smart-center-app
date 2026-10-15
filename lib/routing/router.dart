@@ -100,31 +100,34 @@ GoRouter router(SessionManager sessionManager) => GoRouter(
   },
   routes: [
     StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) =>
-          MainHomeNavigationScreen(navigationShell: navigationShell),
+      builder: (context, state, navigationShell) {
+        return ChangeNotifierProvider(
+          create: (context) => HomeViewModel(
+            authRepository: context.read(),
+            apiRepository: context.read(),
+          ),
+          child: MainHomeNavigationScreen(navigationShell: navigationShell),
+        );
+      },
       branches: [
+        // Pestaña Home
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: Routes.home,
-              pageBuilder: (context, state) {
-                final viewModel = HomeViewModel(
-                  authRepository: context.read(),
-                  apiRepository: context.read(),
-                );
-                return NoTransitionPage(
-                  child: HomeScreen(viewModel: viewModel),
-                );
-              },
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: HomeScreen()),
             ),
           ],
         ),
+
+        // Pestaña Ver más
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: Routes.verMas,
               pageBuilder: (context, state) =>
-                  NoTransitionPage(child: VerMasScreen()),
+                  const NoTransitionPage(child: VerMasScreen()),
             ),
           ],
         ),

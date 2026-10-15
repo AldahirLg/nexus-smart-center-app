@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
 import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/routing/router.dart';
 import 'package:nexus_smart_center/ui/core/route_observer.dart';
@@ -7,22 +9,31 @@ import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
 import 'package:nexus_smart_center/ui/core/utils/device_Icon_mapper.dart';
 import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 import 'package:nexus_smart_center/ui/home/widgets/device_card.dart';
-import 'package:nexus_smart_center/unen_font/unen_font_icons.dart';
 
 class HomeScreen extends StatefulWidget {
-  final HomeViewModel viewModel;
-  const HomeScreen({super.key, required this.viewModel});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
+  PageRoute<dynamic>? _subscribedRoute;
+
+  HomeViewModel get viewModel => context.read<HomeViewModel>();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
     final route = ModalRoute.of(context);
-    if (route is PageRoute) {
+
+    if (route is PageRoute<dynamic> && route != _subscribedRoute) {
+      if (_subscribedRoute != null) {
+        routeObserver.unsubscribe(this);
+      }
+
+      _subscribedRoute = route;
       routeObserver.subscribe(this, route);
     }
   }
@@ -34,61 +45,31 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   @override
-  void didPush() {
-    widget.viewModel.initialize();
-  }
-
-  @override
   void didPopNext() {
-    widget.viewModel.initialize();
+    viewModel.initialize();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
+        Padding(
+          padding: const EdgeInsets.all(24),
+          child: SizedBox(
+            width: double.infinity,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                        color: context.colors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        UnenFont.unenicon,
-                        color: context.colors.surface,
-                        size: 40,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      'UNEN SMART CENTER ${widget.viewModel.currentUser?.email ?? ""}',
-                      style: context.textTheme.headlineMedium,
-                    ),
-                  ],
+                Text(
+                  'Mis Dispositivos',
+                  style: context.textTheme.headlineMedium,
                 ),
-                SizedBox(height: 4),
-                Divider(height: 5, color: context.colors.secondary),
-
+                const SizedBox(height: 8),
                 ListenableBuilder(
-                  listenable: widget.viewModel,
+                  listenable: viewModel,
                   builder: (context, child) {
-                    return Center(
-                      child: (Text(
-                        widget.viewModel.devices.isEmpty
-                            ? 'No cuentas con ningun dispositivo'
-                            : 'Actualmente tienes ${widget.viewModel.devices.length} dispositivos',
-                      )),
+                    return Text(
+                      '${viewModel.devices.length} vinculados a tu cuenta',
                     );
                   },
                 ),
@@ -99,37 +80,75 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         Expanded(
           flex: 8,
           child: ListenableBuilder(
-            listenable: widget.viewModel,
-            builder: (context, state) {
-              if (widget.viewModel.isLoading) {
+            listenable: viewModel,
+            builder: (context, child) {
+              if (viewModel.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(24),
-                itemCount: widget.viewModel.devices.length,
-                itemBuilder: (context, index) {
-                  final device = widget.viewModel.devices[index];
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: DeviceCard(
-                      device: device,
-                      onTap: () {
-                        context.push(
-                          Routes.devicesRoutes.firstWhere(
-                            (route) =>
-                                route == DeviceIconMapper.getRoute(device.type),
-                            orElse: () => '/',
-                          ),
-                          extra: DeviceModel(
-                            id: device.id,
-                            name: device.name,
-                            type: device.type,
-                          ),
-                        );
-                      },
+              if (viewModel.messageError != null && viewModel.devices.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48),
+                        const SizedBox(height: 12),
+                        Text(
+                          viewModel.messageError!,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          onPressed: viewModel.initialize,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reintentar'),
+                        ),
+                      ],
                     ),
+                  ),
+                );
+              }
+
+              if (viewModel.devices.isEmpty) {
+                return const Center(
+                  child: Text('No tienes dispositivos vinculados.'),
+                );
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(24),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 320,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 1.1,
+                ),
+                itemCount: viewModel.devices.length,
+                itemBuilder: (context, index) {
+                  final device = viewModel.devices[index];
+
+                  return DeviceCard(
+                    device: device,
+                    onTap: () {
+                      final route = Routes.devicesRoutes.firstWhere(
+                        (route) =>
+                            route == DeviceIconMapper.getRoute(device.type),
+                        orElse: () => '/',
+                      );
+
+                      if (route == '/') return;
+
+                      context.push(
+                        route,
+                        extra: DeviceModel(
+                          id: device.id,
+                          name: device.name,
+                          type: device.type,
+                        ),
+                      );
+                    },
                   );
                 },
               );

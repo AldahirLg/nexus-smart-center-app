@@ -13,17 +13,13 @@ class DeviceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Ink(
+      child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: colors.outlineVariant.withValues(alpha: 0.5),
-          ),
 
           boxShadow: [
             BoxShadow(
@@ -34,47 +30,21 @@ class DeviceCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _DeviceIcon(icon: DeviceIconMapper.getIcon(device.type)),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    device.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      _TypeChip(
-                        label: DeviceIconMapper.getTypeString(device.type),
-                      ),
-                    ],
-                  ),
-                ],
+            const Spacer(),
+            Text(
+              device.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
-              ),
-              child: Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: colors.onSurfaceVariant,
-              ),
-            ),
+            const SizedBox(height: 6),
+            _TypeChip(label: DeviceIconMapper.getTypeString(device.type)),
           ],
         ),
       ),
@@ -95,10 +65,10 @@ class _DeviceIcon extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Container(
-          width: 56,
-          height: 56,
+          width: 46,
+          height: 46,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -121,23 +91,13 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
     return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: colors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: context.textTheme.labelSmall?.copyWith(
-            color: colors.primary,
-            fontWeight: FontWeight.w700,
-          ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: context.textTheme.bodySmall?.copyWith(
+          fontWeight: FontWeight.w400,
         ),
       ),
     );

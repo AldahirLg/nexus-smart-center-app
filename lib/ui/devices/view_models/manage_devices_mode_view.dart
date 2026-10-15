@@ -41,6 +41,31 @@ class ManageDevicesModeView extends ChangeNotifier {
     }
   }
 
+  Future<bool> deleteDevice(DeviceModel device) async {
+    _isUpdating = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final tokenId = await _authRepo.getIdToken();
+      if (tokenId == null) {
+        throw Exception('Sesión no válida');
+      }
+
+      await _apiRepo.deleteDevice(tokenId, device.id);
+
+      _devices = _devices.where((d) => d.id != device.id).toList();
+
+      return true;
+    } catch (e) {
+      _errorMessage = 'No se pudo eliminar el dispositivo';
+      return false;
+    } finally {
+      _isUpdating = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> updateDeviceName(DeviceModel device, String newName) async {
     final name = newName.trim();
     if (name.isEmpty || name == device.name) return false;

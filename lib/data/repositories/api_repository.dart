@@ -112,4 +112,12 @@ class ApiRepository {
       update.data['device'] as Map<String, dynamic>,
     ).toDomain();
   }
+
+  Future<void> deleteDevice(String idToken, String deviceId) async {
+    final response = await _apiService.deleteDevice(idToken, deviceId);
+
+    if (response.statusCode != 204) {
+      throw Exception('Error al eliminar el dispositivo');
+    }
+  }
 }

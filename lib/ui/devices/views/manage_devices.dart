@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nexus_smart_center/models/device_model.dart';
 import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
 import 'package:nexus_smart_center/ui/devices/view_models/manage_devices_mode_view.dart';
+import 'package:nexus_smart_center/ui/devices/widgets/device_management_tile.dart';
 import 'package:nexus_smart_center/ui/user/widgets/option_tile.dart';
 import 'package:nexus_smart_center/ui/user/widgets/panel_content.dart';
 import 'package:provider/provider.dart';
@@ -90,31 +91,67 @@ class ManageDevicesScreen extends StatelessWidget {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: vm.getDevices,
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: vm.devices.length,
-        separatorBuilder: (_, __) =>
-            const Divider(height: 1, indent: 16, endIndent: 16),
-        itemBuilder: (context, i) {
-          final device = vm.devices[i];
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: vm.devices.length,
+      padding: const EdgeInsets.all(12),
+      separatorBuilder: (_, __) => Divider(height: 1, thickness: 1),
+      itemBuilder: (context, i) {
+        final device = vm.devices[i];
 
-          return ListTile(
-            title: Text(device.name),
-            trailing: IconButton(
-              icon: const Icon(Icons.edit_outlined),
-              tooltip: 'Cambiar nombre',
-              onPressed: vm.isUpdating
-                  ? null
-                  : () => _editName(context, device),
-            ),
-          );
-        },
-      ),
+        return DeviceManagementTile(
+          device: device,
+          enabled: !vm.isUpdating,
+          onEdit: () => _editName(context, device),
+          onDelete: () => _deleteDevice(context, device),
+        );
+      },
     );
   }
+}
+
+Future<void> _deleteDevice(BuildContext context, DeviceModel device) async {
+  final vm = context.read<ManageDevicesModeView>();
+  final messenger = ScaffoldMessenger.of(context);
+
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Eliminar dispositivo'),
+      content: Text(
+        '¿Deseas eliminar "${device.name}"? '
+        'Esta acción no se puede deshacer.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text('Eliminar'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm != true || !context.mounted) return;
+
+  final success = await vm.deleteDevice(device);
+
+  if (!context.mounted) return;
+
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        success
+            ? 'Dispositivo eliminado correctamente'
+            : (vm.errorMessage ?? 'No se pudo eliminar el dispositivo'),
+      ),
+    ),
+  );
 }
 
 class _EditNameDialog extends StatefulWidget {

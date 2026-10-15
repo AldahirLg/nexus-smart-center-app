@@ -11,49 +11,79 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return AppScaffold(
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colors.primary.withValues(alpha: 0.18),
+                    colors.primary.withValues(alpha: 0.06),
+                  ],
+                ),
+              ),
+              child: Icon(Icons.wifi, size: 60, color: colors.primary),
+            ),
             SizedBox(height: 24),
             Center(
               child: Text(
                 textAlign: TextAlign.center,
-                'Welcom Nexus Smart Center',
-                style: context.textTheme.headlineLarge?.copyWith(
-                  color: context.colors.primary,
-                ),
+                'Bienvenido',
+                style: context.textTheme.headlineLarge?.copyWith(),
               ),
             ),
-            Icon(UnenFont.unenicon, color: context.colors.primary, size: 150),
             SizedBox(height: 24),
             SizedBox(
               height: 60,
-              width: 300,
+              width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(),
+                style: ElevatedButton.styleFrom(
+                  elevation: 2,
+                  backgroundColor: context.colors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
                 onPressed: () {
                   context.push(Routes.login);
                 },
-                child: Text('Iniciar Sesion'),
+                child: Text(
+                  'Iniciar Sesion',
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: context.colors.primary,
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 24),
             SizedBox(
               height: 60,
-              width: 300,
+              width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                  elevation: 0,
                   backgroundColor: context.colors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 onPressed: () {
                   context.push(Routes.signup);
                 },
                 child: Text(
                   'Crear Cuenta',
-                  style: context.textTheme.bodyMedium?.copyWith(
+                  style: context.textTheme.titleMedium?.copyWith(
                     color: context.colors.surface,
                   ),
                 ),

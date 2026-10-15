@@ -33,7 +33,7 @@ class AppScaffold extends StatelessWidget {
           children: [
             Positioned.fill(
               child: DecoratedBox(
-                decoration: BoxDecoration(color: context.colors.surface),
+                decoration: BoxDecoration(color: Colors.transparent),
               ),
             ),
             body,

@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:nexus_smart_center/ui/core/themes/context_extensions.dart';
-import 'package:nexus_smart_center/ui/core/widgets/app_scaffold.dart';
+import 'package:nexus_smart_center/ui/home/view_models/home_view_model.dart';
 
 class MainHomeNavigationScreen extends StatelessWidget {
   const MainHomeNavigationScreen({super.key, required this.navigationShell});
+
   final StatefulNavigationShell navigationShell;
-  _onTap(int index) {
-    navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
-    );
+
+  void _onTap(BuildContext context, int index) {
+    final previousIndex = navigationShell.currentIndex;
+
+    navigationShell.goBranch(index, initialLocation: index == previousIndex);
+
+    // Recargar dispositivos al regresar a Home desde otra pestaña.
+    if (index == 0 && previousIndex != 0) {
+      context.read<HomeViewModel>().initialize();
+    }
   }
 
   @override
@@ -42,7 +49,7 @@ class MainHomeNavigationScreen extends StatelessWidget {
             fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
-          onTap: _onTap,
+          onTap: (index) => _onTap(context, index),
         ),
       ),
     );

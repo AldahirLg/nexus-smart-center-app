@@ -30,7 +30,9 @@ class Dependencies extends StatelessWidget {
       providers: [
         Provider<FcmService>(create: (_) => FcmService()),
         Provider<WifiScanService>(create: (_) => WifiScanService()),
-        Provider(create: (_) => SocketClient(serverUrl: AppConfig.apiBaseUrl)),
+        Provider(
+          create: (_) => SocketClient(serverUrl: AppConfig.socketBaseUrl),
+        ),
         Provider<BLEservice>(create: (_) => BLEservice()),
         Provider<Dio>(create: (_) => ApiClient.instance.dio),
         Provider(create: (_) => FirebaseAuthService()),
